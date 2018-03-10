@@ -1,0 +1,41 @@
+<div ng-class="{transparent: (!loaded && !loaded_nc_type)}">
+    <form role="form" name="form" novalidate>
+    <div class="grid-heading">${documentUC}</div>
+        ${textFieldsHtml}
+        <div class="form-group row margin-bottom-large">
+            <div class="col-md-3">
+                ${dateFieldsHtml}
+            </div>
+
+            <div class="col-md-9">
+                <div class="row">
+                    <label ng-repeat="filter in filters" class="col-md-2">
+                        <input type="checkbox" ng-model="filter.value" value="1" ng-checked="filter.value == 1" /> {{filter.name}}
+                    </label>
+                </div>
+                ${multiValuedFiltersHtml}
+                <div class="form-group row"><div class="col-md-2">
+                        <input type="text" class="form-control" placeholder="Code" ng-model="UserCode"/>
+                    </div></div>
+
+            </div>
+        </div>
+        $if(fileUploadHtml)${fileUploadHtml}
+
+        <div class="form-group margin-top-xlarge">
+            <button type="button" class="btn btn-primary" ng-click="create()" ng-disabled="form.$invalid || processing">
+                Save
+                <i ng-show="processing" class="fa fa-spinner fa-spin"></i>
+            </button>
+        </div>
+    </form>
+</div>
+<div class="connection-problem" ng-class="{concealed: !requestFailed}">
+    <i class="fa fa-warning"></i>
+    <div class="message">There was a problem contacting the server.<br>Please ensure you have a strong connection.</div>
+</div>
+<div class="loading-animation" ng-class="{concealed: (loaded || requestFailed)}">
+    <div class="loading-animation-bg">
+        <i class="fa fa-refresh"></i>
+    </div>
+</div>

@@ -1,0 +1,42 @@
+<div ng-class="{transparent: !loaded}">
+    <div class="grid-heading">${document}</div>
+    <div class="grid-buttons">
+        <div class="grid-button" ng-show="process_action" ng-click="codeDocs()" ng-class="{disabled: processing}"><i class="fa fa-plus"></i> Add Codes</div>
+        <div class="grid-button" ng-click="reloadBatchDocs()" title="Refresh the list"><i class="fa fa-refresh"></i></div>
+    </div>
+    <div class="grid">
+        <table border="1">
+            <thead>
+            <tr>
+                ${columnTH}
+                $if(hyperLink)<th>Link</th>
+                <th>Code1</th>
+                <th>Code2</th>
+                $if(Code3)<th>Code3</th>
+                <th>Final Code</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="row in gridOptions.data">
+                ${columnTD}
+                $if(hyperLink)<td><a href="{{row.Hyperlink}}">{{row.Hyperlink}}</a></td>
+                <td>{{row.Code1}}</td>
+                <td>{{row.Code2}}</td>
+                $if(Code3)<td>{{row.Code3}}</td>
+                <td><input type="text" ng-model="row.UserCode" 
+                           ng-model-options="{updateOn: 'blur'}" 
+                           ng-blur="codeDoc(row)"/></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="connection-problem" ng-class="{concealed: !requestFailed}">
+    <i class="fa fa-warning"></i>
+    <div class="message">Server Error.</div>
+</div>
+<div class="loading-animation" ng-class="{concealed: (loaded || requestFailed)}">
+    <div class="loading-animation-bg">
+        <i class="fa fa-refresh"></i>
+    </div>
+</div>

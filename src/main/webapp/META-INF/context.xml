@@ -1,2 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context antiJARLocking="true" path=""/>
+<Context antiJARLocking="true" path="/newppdpapp">
+    <ResourceLink name="jdbc/PAPolicy_Copy"
+        global="jdbc/PAPolicy_Copy"
+        auth="Container"
+        type="javax.sql.DataSource" />
+    <ResourceLink name="ldapURL"
+        global="ldapURL"
+        auth="Container"
+        type="java.lang.String" />
+    <ResourceLink name="ldapPrinciapl"
+        global="ldapPrincipal"
+        type="java.lang.String" />
+    <ResourceLink name="ldapCredentials"
+        global="ldapCredentials"
+        type="java.lang.String" />
+</Context>
