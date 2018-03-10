@@ -31,10 +31,10 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.Map;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.springframework.http.HttpStatus;
