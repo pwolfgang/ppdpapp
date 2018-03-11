@@ -45,7 +45,8 @@ import org.hibernate.transform.ResultTransformer;
  */
 public class SpecialAliasToEntityMapResultTransformer implements ResultTransformer {
     
-    public static SpecialAliasToEntityMapResultTransformer INSTANCE = new SpecialAliasToEntityMapResultTransformer();
+    public static SpecialAliasToEntityMapResultTransformer 
+            INSTANCE = new SpecialAliasToEntityMapResultTransformer();
     
     private SpecialAliasToEntityMapResultTransformer() {}
     
@@ -54,7 +55,7 @@ public class SpecialAliasToEntityMapResultTransformer implements ResultTransform
         Map<String, Object> result = new HashMap<>(tuple.length);
         for (int i = 0; i < tuple.length; i++) {
             String alias = aliases[i];
-            if (aliases != null) {
+            if (alias != null) {
                 if (alias.equals("ID")) {
                     result.put(alias, tuple[i].toString());
                 } else {
