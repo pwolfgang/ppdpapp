@@ -33,7 +33,9 @@ package edu.temple.cla.policydb.ppdpapp.api.daos;
 
 import edu.temple.cla.policydb.ppdpapp.api.models.AssignmentType;
 import java.util.List;
-import org.hibernate.Criteria;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AssignmentTypeDAOImpl implements AssignmentTypeDAO {
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     public AssignmentTypeDAOImpl(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
@@ -50,11 +52,11 @@ public class AssignmentTypeDAOImpl implements AssignmentTypeDAO {
     @Override
     @Transactional
     public List<AssignmentType> list() {
-        List<AssignmentType> listNewsClipTypes = (List<AssignmentType>) sessionFactory
-                .getCurrentSession()
-                .createCriteria(AssignmentType.class)
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                .list();
+        Session session = sessionFactory.getCurrentSession();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<AssignmentType> criteria = builder.createQuery(AssignmentType.class);
+        criteria.from(AssignmentType.class);
+        List<AssignmentType> listNewsClipTypes = session.createQuery(criteria).getResultList();
         return listNewsClipTypes;
     }
 }
