@@ -38,7 +38,6 @@ import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
 import java.util.List;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -123,15 +122,15 @@ public class BatchDAOImpl implements BatchDAO {
 
     @Override
     @Transactional
-    public List<Object> findDocuments(int id) {
+    public List<Object[]> findDocuments(int id) {
         Session sess = sessionFactory.getCurrentSession();
 
-        NativeQuery<String> tableNameQuery = sess.createNativeQuery("SELECT TableName FROM Tables WHERE ID = (SELECT TablesID FROM Batches WHERE BatchID = " + id + ")", String.class);
-        String tableName = tableNameQuery.uniqueResult();
+        NativeQuery tableNameQuery = sess.createNativeQuery("SELECT TableName FROM Tables WHERE ID = (SELECT TablesID FROM Batches WHERE BatchID = " + id + ")");
+        String tableName = (String)tableNameQuery.uniqueResult();
 
-        NativeQuery<Object> query = sess.createNativeQuery("SELECT * FROM " + tableName + " AS nc "
+        NativeQuery query = sess.createNativeQuery("SELECT * FROM " + tableName + " AS nc "
                 + "LEFT JOIN BatchDocument AS bd ON nc.ID = bd.DocumentID "
-                + "WHERE bd.BatchID = " + id, Object.class);
+                + "WHERE bd.BatchID = " + id);
         return query.getResultList();
     }
 
@@ -139,9 +138,9 @@ public class BatchDAOImpl implements BatchDAO {
     @Transactional
     public void addDocument(int batchID, String docID) {
         Session sess = sessionFactory.getCurrentSession();
-        SQLQuery query = sess.createSQLQuery("SELECT ID FROM Tables WHERE ID = (SELECT TablesID FROM Batches WHERE BatchID = " + batchID + ")");
+        NativeQuery query = sess.createNativeQuery("SELECT ID FROM Tables WHERE ID = (SELECT TablesID FROM Batches WHERE BatchID = " + batchID + ")");
         String tableID = query.uniqueResult().toString();
-        query = sess.createSQLQuery("INSERT INTO BatchDocument (DocumentID, TablesID ,BatchID)"
+        query = sess.createNativeQuery("INSERT INTO BatchDocument (DocumentID, TablesID ,BatchID)"
                 + "VALUES ('" + docID + "'," + tableID + "," + batchID + ");");
         query.executeUpdate();
     }
@@ -150,8 +149,8 @@ public class BatchDAOImpl implements BatchDAO {
     @Transactional
     public void deleteDocument(int batchID, String docID) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<String> tableIDQuery = sess.createNativeQuery("SELECT TablesID FROM Batches WHERE BatchID=" + batchID + ")", String.class);
-        String tableID = tableIDQuery.uniqueResult();
+        NativeQuery tableIDQuery = sess.createNativeQuery("SELECT TablesID FROM Batches WHERE BatchID=" + batchID + ")");
+        String tableID = (String)tableIDQuery.uniqueResult();
         try {
             NativeQuery deleteQuery = sess.createNativeQuery("DELETE FROM BatchDocument WHERE BatchID = " 
                     + batchID + " AND TablesID = " + tableID + " AND DocumentID = '" + docID + "'"); //

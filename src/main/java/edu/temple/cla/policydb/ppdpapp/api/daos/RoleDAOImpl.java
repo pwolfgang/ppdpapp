@@ -51,14 +51,18 @@ public class RoleDAOImpl implements RoleDAO {
     @Override
     @Transactional
     public List<Role> list() {
-        List<Role> listRoles = (List<Role>) sessionFactory.getCurrentSession().createCriteria(Role.class).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
+        List<Role> listRoles = (List<Role>) sessionFactory
+                .getCurrentSession()
+                .createCriteria(Role.class)
+                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
+                .list();
         return listRoles;
     }
 
     @Override
     @Transactional
     public Role find(int id) {
-        Role roleObj = (Role) sessionFactory.getCurrentSession().get(Role.class, id);
+        Role roleObj = sessionFactory.getCurrentSession().get(Role.class, id);
         return roleObj;
     }
 }

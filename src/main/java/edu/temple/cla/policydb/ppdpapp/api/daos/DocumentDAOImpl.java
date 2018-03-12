@@ -125,9 +125,9 @@ public class DocumentDAOImpl implements DocumentDAO {
     private Map<String, Integer> getStatMap(Session sess, int tableID) {
         Table table = tableLoader.getTableById(tableID);
         int maxNumberOfCodes = table.getNumCodesRequired();
-        NativeQuery<Object[]> statusQuery = sess.createNativeQuery("select DocumentID, "
+        NativeQuery statusQuery = sess.createNativeQuery("select DocumentID, "
                 + "count(DocumentID) as stat from UserPolicyCode where "
-                + "TablesID=" + tableID + " group by DocumentID", Object[].class);
+                + "TablesID=" + tableID + " group by DocumentID");
         List<Object[]> statList = statusQuery.list();
         Map<String, Integer> statMap = new HashMap<>();
         statList.forEach(row -> {
@@ -190,9 +190,9 @@ public class DocumentDAOImpl implements DocumentDAO {
     @Transactional
     public String getDocumentCount(String tableName) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<String> query = sess.createNativeQuery("select count(ID) from " + tableName, String.class);
+        NativeQuery query = sess.createNativeQuery("select count(ID) from " + tableName);
         try {
-            return query.uniqueResult();
+            return (String)query.uniqueResult();
         } catch (Exception ex) {
             throw new RuntimeException("Error in query " + query, ex);
         }
@@ -281,8 +281,8 @@ public class DocumentDAOImpl implements DocumentDAO {
         //endIf
         //if there are too many codes
         //throw exception
-        NativeQuery<Integer> query = sess.createNativeQuery("SELECT Code FROM UserPolicyCode WHERE DocumentID = '"
-                + docid + "' AND TablesID = " + tableID + " AND Email <> '" + email + "'", Integer.class);
+        NativeQuery query = sess.createNativeQuery("SELECT Code FROM UserPolicyCode WHERE DocumentID = '"
+                + docid + "' AND TablesID = " + tableID + " AND Email <> '" + email + "'");
         List<Integer> userPolicyCodes = query.list();
         Integer matches = 1; //because the codeid always matches itsself
         if (userPolicyCodes.size() == maxNumOfCodes) { //if there is already the max value of userPolicyCodes in the database, this must be a tiebreak.
@@ -471,8 +471,8 @@ public class DocumentDAOImpl implements DocumentDAO {
             query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = " + codeid
                     + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + " AND BatchID = " + batchid + ");");
             if (query.executeUpdate() != 1) {
-                NativeQuery<Integer> query2 = sess.createNativeQuery("SELECT BatchID from UserPolicyCode"
-                        + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + ");", Integer.class);
+                NativeQuery query2 = sess.createNativeQuery("SELECT BatchID from UserPolicyCode"
+                        + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + ");");
                 List<Integer> resultList = query2.list();
                 if (!resultList.isEmpty()) {
                     throw new RuntimeException(email + " attempt to add a code to batch " + batchid + " but aleady coded in batch " + resultList.get(0));
@@ -537,10 +537,10 @@ public class DocumentDAOImpl implements DocumentDAO {
     @Transactional
     public List<String> verifyUser(int batchid, String email) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<String> query = sess.createNativeQuery("select UserPolicyCode.documentID from BatchDocument "
+        NativeQuery query = sess.createNativeQuery("select UserPolicyCode.documentID from BatchDocument "
                 + "join UserPolicyCode on BatchDocument.DocumentID=UserPolicyCode.DocumentID "
                 + "and BatchDocument.TablesID=UserPolicyCode.TablesID "
-                + "where Email='" + email + "' and BatchDocument.BatchID=" + batchid + ";", String.class);
+                + "where Email='" + email + "' and BatchDocument.BatchID=" + batchid + ";");
         return query.list();
     }
 }
