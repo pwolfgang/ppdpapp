@@ -31,13 +31,20 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.servlets;
 
+import edu.temple.cla.policydb.ppdpapp.api.models.User;
+import edu.temple.cla.policydb.ppdpapp.api.services.Account;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -45,21 +52,48 @@ import org.springframework.web.servlet.DispatcherServlet;
  *
  * @author Paul
  */
+@Component
 public class MyDispatcherServlet extends DispatcherServlet {
+
+    private final ApplicationContext servletContext;
+    
+    private Account accountSvc;
     
     private static final Logger LOGGER = Logger.getLogger(MyDispatcherServlet.class);
     
     
     public MyDispatcherServlet(WebApplicationContext servletContext) {
         super(servletContext);
+        this.servletContext = servletContext;
     }
     
     @Override
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
         Map<String, String[]> parameterMap = req.getParameterMap();
-        String mapAsString = mapToString(parameterMap);
-        LOGGER.info("MyDispatcherServlet called " + mapAsString);
-        super.service(req, res);
+        if (parameterMap.containsKey("token")) {
+            processToken(parameterMap, req, res);
+        } else {
+            super.service(req, res);
+        }
+    }
+    
+    private void processToken(Map<String, String[]> parameterMap, ServletRequest req, ServletResponse res) {
+        if (accountSvc == null) {
+            accountSvc = (Account)servletContext.getBean("account");
+        }
+        String token = parameterMap.get("token")[0];
+        try {
+            User user = accountSvc.doAuthentication(token);
+            Map<String, String[]> newParameterMap = new HashMap<>(parameterMap);
+            newParameterMap.put("user", new String[]{user.toJson()});
+            LOGGER.info("Added user param " + mapToString(newParameterMap));
+            super.service(req, res);
+        } catch (Exception e) {
+            LOGGER.error("Error processing token", e);
+            HttpServletResponse httpResponse = (HttpServletResponse) res;
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        }
+        
     }
     
     private String mapToString(Map<String, String[]> map) {

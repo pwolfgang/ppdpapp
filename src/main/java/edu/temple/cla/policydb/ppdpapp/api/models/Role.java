@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.models;
 
+import java.util.StringJoiner;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Id;
@@ -79,5 +80,12 @@ public class Role {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String toJson() {
+        StringJoiner sj = new StringJoiner(", ", "{", "}");
+        sj.add("\"roleID\":" + roleID);
+        sj.add("\"name\":\"" + name + "\"");
+        return sj.toString();
     }
 }

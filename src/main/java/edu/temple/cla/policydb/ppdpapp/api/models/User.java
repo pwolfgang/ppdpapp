@@ -32,6 +32,7 @@
 package edu.temple.cla.policydb.ppdpapp.api.models;
 
 import java.util.Date;
+import java.util.StringJoiner;
 import javax.persistence.*;
 
 //import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -134,5 +135,16 @@ public class User {
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
-
+    
+    public String toJson() {
+        StringJoiner sj = new StringJoiner(",", "{", "}");
+        sj.add("\"email\":\"" + email + "\"");
+        sj.add("\"role\":" + role.toJson());
+        sj.add("\"firstName\":\"" + firstName + "\"");
+        sj.add("\"lastName\":\"" + lastName + "\"");
+        sj.add("\"isActive\":" + isActive );
+        sj.add("\"dateAdded\":\"" + dateAdded + "\"");
+        sj.add("\"accessToken\":\"" + accessToken + "\"");
+        return sj.toString();
+    }
 }
