@@ -467,8 +467,13 @@ public class DocumentDAOImpl implements DocumentDAO {
             if (cause == null || !cause.getMessage().startsWith("Duplicate entry")) {
                 throw new RuntimeException("Insert to UserPolicyCode Failed", e);
             }
-            query = sess.createSQLQuery("UPDATE UserPolicyCode SET Code = " + codeid
+            if (batchid == null || batchid.equals("NULL")) {
+                query = sess.createSQLQuery("UPDATE UserPolicyCode SET Code = " + codeid
+                    + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + " AND isNull(BatchID))");                
+            } else {
+                query = sess.createSQLQuery("UPDATE UserPolicyCode SET Code = " + codeid
                     + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + " AND BatchID = " + batchid + ");");
+            }
             if (query.executeUpdate() != 1) {
                 SQLQuery query2 = sess.createSQLQuery("SELECT BatchID from UserPolicyCode"
                         + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + ");");
