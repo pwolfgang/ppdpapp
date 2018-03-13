@@ -112,9 +112,9 @@ public class AccountController {
         if (user != null) {
             user.setAccessToken(null);
             userDAO.update(user);
-            return new ResponseEntity<String>(email + " logged out", HttpStatus.OK);
+            return new ResponseEntity<>(email + " logged out", HttpStatus.OK);
         } else {
-            return new ResponseEntity<String>(email + " not found", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(email + " not found", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     

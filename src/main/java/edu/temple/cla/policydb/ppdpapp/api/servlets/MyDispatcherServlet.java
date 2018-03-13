@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,49 +29,56 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.config;
+package edu.temple.cla.policydb.ppdpapp.api.servlets;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import java.io.IOException;
+import java.util.Map;
+import java.util.StringJoiner;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import org.apache.log4j.Logger;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 
-@Configuration
-@EnableWebMvc
-@EnableTransactionManagement
-@ComponentScan("edu.temple.cla.policydb.ppdpapp.api")
-public class WebConfig implements WebMvcConfigurer {
+/**
+ *
+ * @author Paul
+ */
+public class MyDispatcherServlet extends DispatcherServlet {
     
-    @Bean(name="jspViewResolver")
-    public ViewResolver getJspVieewResolver() {
-        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-		resolver.setPrefix("WEB-INF/jsp/");
-		resolver.setSuffix(".jsp");
-		resolver.setOrder(2);
-		return resolver;        
-    }
+    private static final Logger LOGGER = Logger.getLogger(MyDispatcherServlet.class);
     
-    @Bean(name="contentNegotiatingResolver")
-    public ViewResolver cnViewResolver() {
-        return new ContentNegotiatingViewResolver();
+    
+    public MyDispatcherServlet(WebApplicationContext servletContext) {
+        super(servletContext);
     }
     
     @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer){
-        configurer.defaultContentType(MediaType.APPLICATION_JSON);
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        Map<String, String[]> parameterMap = req.getParameterMap();
+        String mapAsString = mapToString(parameterMap);
+        LOGGER.info("MyDispatcherServlet called " + mapAsString);
+        super.service(req, res);
     }
     
-    @Override
-    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-        configurer.enable();
+    private String mapToString(Map<String, String[]> map) {
+        StringBuilder stb = new StringBuilder();
+        map.forEach((k, v) -> {
+            stb.append(k)
+                    .append(" -> ")
+                    .append(arrayToString(v))
+                    .append("\n");
+        });
+        return stb.toString();
     }
-
+    
+    StringJoiner arrayToString(String[] v) {
+        StringJoiner sj = new StringJoiner(", ", "[", "]");
+        for (String s:v) {
+            sj.add(s);
+        }
+        return sj;
+    }
+    
 }
