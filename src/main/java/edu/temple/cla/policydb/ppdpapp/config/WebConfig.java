@@ -31,9 +31,11 @@
  */
 package edu.temple.cla.policydb.ppdpapp.config;
 
+import edu.temple.cla.policydb.ppdpapp.api.services.JsonStringToUser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.ViewResolver;
@@ -72,6 +74,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         configurer.enable();
+    }
+    
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new JsonStringToUser());
     }
 
 }

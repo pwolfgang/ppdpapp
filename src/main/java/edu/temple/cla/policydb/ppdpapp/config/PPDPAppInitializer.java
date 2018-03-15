@@ -35,7 +35,6 @@ package edu.temple.cla.policydb.ppdpapp.config;
 import edu.temple.cla.policydb.ppdpapp.api.servlets.MyDispatcherServlet;
 import org.apache.log4j.Logger;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.FrameworkServlet;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 

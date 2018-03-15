@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,43 +29,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.controllers;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-
-import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
+import edu.temple.cla.policydb.ppdpapp.api.models.Role;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import edu.temple.cla.policydb.ppdpapp.api.services.Account;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-@RestController
-@RequestMapping("/users")
-public class UserController {
+/**
+ *
+ * @author Paul
+ */
+public class JsonStringToUserTest {
     
-    @Autowired
-    private UserDAO userDAO;
-    @Autowired
-    private Account accountSvc;
-
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getUsers(@RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.list(), HttpStatus.OK);
+    public JsonStringToUserTest() {
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{email:.+}")
-    public ResponseEntity<?> getUser(@PathVariable String email, @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.find(email), HttpStatus.OK);
+    @Test
+    public void testConvert() {
+        System.out.println("convert");
+        User expResult = new User();
+        expResult.setEmail("admin@temple.edu");
+        Role role = new Role();
+        role.setRoleID(1);
+        role.setName("admin");
+        expResult.setRole(role);
+        expResult.setFirstName("admin");
+        expResult.setLastName("user");
+        expResult.setIsActive(true);
+        String source = expResult.toJson();
+        JsonStringToUser instance = new JsonStringToUser();
+        User result = instance.convert(source);
+        assertEquals(expResult, result);
     }
-
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> postUser(@RequestBody User userObj, @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.save(userObj), HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/{email:.+}/batches")
-    public ResponseEntity<?> getUserBatches(@PathVariable String email, @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.findBatches(email), HttpStatus.OK);
-    }
+    
 }

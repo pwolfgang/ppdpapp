@@ -34,6 +34,8 @@ package edu.temple.cla.policydb.ppdpapp.api.servlets;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
 import edu.temple.cla.policydb.ppdpapp.api.services.Account;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -41,6 +43,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -86,8 +89,8 @@ public class MyDispatcherServlet extends DispatcherServlet {
             User user = accountSvc.doAuthentication(token);
             Map<String, String[]> newParameterMap = new HashMap<>(parameterMap);
             newParameterMap.put("user", new String[]{user.toJson()});
-            LOGGER.info("Added user param " + mapToString(newParameterMap));
-            super.service(req, res);
+            HttpServletRequest newReq = new ModifiedRequest(req, newParameterMap);
+            super.service(newReq, res);
         } catch (Exception e) {
             LOGGER.error("Error processing token", e);
             HttpServletResponse httpResponse = (HttpServletResponse) res;
@@ -113,6 +116,41 @@ public class MyDispatcherServlet extends DispatcherServlet {
             sj.add(s);
         }
         return sj;
+    }
+    
+    private class ModifiedRequest extends HttpServletRequestWrapper {
+        
+        private final Map<String, String[]> newParameterMap;
+        
+        public ModifiedRequest(ServletRequest req, Map<String, String[]> newParameterMap) {
+            super((HttpServletRequest)req);
+            this.newParameterMap = Collections.unmodifiableMap(newParameterMap);
+        }
+        
+        @Override
+        public Map<String, String[]> getParameterMap() {
+            return newParameterMap;
+        }
+        
+        @Override
+        public String getParameter(String name) {
+            String[] value = newParameterMap.get(name);
+            if (name != null) {
+                return value[0];
+            } else {
+                return null;
+            }
+        }
+        
+        @Override
+        public String[] getParameterValues(String name) {
+            return newParameterMap.get(name);
+        }
+        
+        @Override
+        public Enumeration<String> getParameterNames() {
+            return Collections.enumeration(newParameterMap.keySet());
+        }
     }
     
 }

@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.models;
 
+import java.util.Objects;
 import java.util.StringJoiner;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -87,5 +88,15 @@ public class Role {
         sj.add("\"roleID\":" + roleID);
         sj.add("\"name\":\"" + name + "\"");
         return sj.toString();
+    }
+    
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (this.getClass() == o.getClass()) {
+            Role other = (Role) o;
+            return roleID==other.roleID && Objects.equals(name, other.name);
+        } else {
+            return false;
+        }
     }
 }

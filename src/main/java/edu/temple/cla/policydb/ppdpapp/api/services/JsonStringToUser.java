@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,43 +29,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.controllers;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-
-import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import edu.temple.cla.policydb.ppdpapp.api.services.Account;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.io.IOException;
+import org.apache.log4j.Logger;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-@RestController
-@RequestMapping("/users")
-public class UserController {
+/**
+ *
+ * @author Paul
+ */
+@Component
+public class JsonStringToUser implements Converter<String, User> {
+
+    private static final Logger LOGGER = Logger.getLogger(JsonStringToUser.class);
     
-    @Autowired
-    private UserDAO userDAO;
-    @Autowired
-    private Account accountSvc;
-
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getUsers(@RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.list(), HttpStatus.OK);
+    @Override
+    public User convert(String source) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            User user = mapper.readValue(source, User.class);
+            return user;
+        } catch (IOException ioex) {
+            LOGGER.error("Error converting " + source, ioex);
+            return null;
+        }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{email:.+}")
-    public ResponseEntity<?> getUser(@PathVariable String email, @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.find(email), HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> postUser(@RequestBody User userObj, @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.save(userObj), HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/{email:.+}/batches")
-    public ResponseEntity<?> getUserBatches(@PathVariable String email, @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(userDAO.findBatches(email), HttpStatus.OK);
-    }
 }
+
