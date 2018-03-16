@@ -33,11 +33,8 @@ package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
 
 import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAO;
-import edu.temple.cla.policydb.ppdpapp.api.models.Newspaper;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
 import edu.temple.cla.policydb.ppdpapp.api.services.Account;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
