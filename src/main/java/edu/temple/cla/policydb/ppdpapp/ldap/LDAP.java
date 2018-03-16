@@ -43,16 +43,17 @@ import javax.naming.directory.SearchResult;
 
 public class LDAP {
     
-    private Hashtable<String, String> env;
+    private Hashtable<String, String> masterEnv;
     
     public LDAP(Hashtable<String, String> env) {
-        this.env = env;
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.SECURITY_AUTHENTICATION, "simple");
+        masterEnv = env;
+        masterEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        masterEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
     }
     
     public Object[] authorize(String uid, String pw) {
         try {
+            Hashtable<String, String> env = new Hashtable<>(masterEnv);
             DirContext ctx = new InitialDirContext(env);
             Attributes matchAttributes = new BasicAttributes(true);
             matchAttributes.put(new BasicAttribute("uid", uid));
