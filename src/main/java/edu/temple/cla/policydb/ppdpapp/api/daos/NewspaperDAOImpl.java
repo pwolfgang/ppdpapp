@@ -35,9 +35,9 @@ import edu.temple.cla.policydb.ppdpapp.api.models.Newspaper;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +65,7 @@ public class NewspaperDAOImpl implements NewspaperDAO {
     @Transactional
     public void add(String name) {
         Session sess = sessionFactory.getCurrentSession();
-        SQLQuery query = sess.createSQLQuery("INSERT INTO Newspaper (Name) VALUES (" + name + ");");
+        NativeQuery query = sess.createNativeQuery("INSERT INTO Newspaper (Name) VALUES (" + name + ");");
         query.executeUpdate();
     }
 }

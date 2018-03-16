@@ -52,7 +52,11 @@ public class FilterDAOImpl implements FilterDAO {
     @Override
     @Transactional
     public List<Filter> list() {
-        List<Filter> listFilters = (List<Filter>) sessionFactory.getCurrentSession().createCriteria(Filter.class).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
+        List<Filter> listFilters = (List<Filter>) sessionFactory
+                .getCurrentSession()
+                .createCriteria(Filter.class)
+                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
+                .list();
         return listFilters;
     }
 

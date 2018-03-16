@@ -43,7 +43,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -159,7 +159,8 @@ public class DocumentController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{tableName}")
-    public ResponseEntity<?> updateDocument(@RequestBody Object docObj, @PathVariable String tableName, @RequestParam(value = "token") String token) {
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<?> updateDocument(@RequestBody Map<String, Object> docObj, @PathVariable String tableName, @RequestParam(value = "token") String token) {
         User user = null;
         try {
             user = accountSvc.doAuthentication(token);
@@ -171,7 +172,7 @@ public class DocumentController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{tableName}")
-    public ResponseEntity<?> insertDocument(@RequestBody Object docObj, @PathVariable String tableName, @RequestParam(value = "token") String token) {
+    public ResponseEntity<?> insertDocument(@RequestBody Map<String, Object> docObj, @PathVariable String tableName, @RequestParam(value = "token") String token) {
         User user = null;
         try {
             user = accountSvc.doAuthentication(token);

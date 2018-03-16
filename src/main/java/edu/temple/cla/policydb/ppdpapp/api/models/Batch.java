@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.models;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
@@ -43,7 +44,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "Batches")
-public class Batch {
+public class Batch implements Serializable {
 
     /**
      * Annotated properties/fields.
