@@ -36,7 +36,6 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
-import edu.temple.cla.policydb.ppdpapp.api.models.AssignmentType;
 import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
 import edu.temple.cla.policydb.ppdpapp.api.services.Account;
@@ -63,13 +62,7 @@ public class BatchController {
     private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getBatches(@RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> getBatches(@RequestParam(value = "user") User user) {
 
         if (user.getRole().getRoleID() > 1) {
             return new ResponseEntity<>(batchDAO.list(), HttpStatus.OK);
@@ -79,69 +72,33 @@ public class BatchController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id:\\d+}")
-    public ResponseEntity<?> getBatch(@PathVariable int id, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> getBatch(@PathVariable int id, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(batchDAO.find(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id}/users")
-    public ResponseEntity<?> getBatchUsers(@PathVariable int id, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> getBatchUsers(@PathVariable int id, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(batchDAO.findUsers(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id}/documents")
-    public ResponseEntity<?> getDocuments(@PathVariable int id, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> getDocuments(@PathVariable int id, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(batchDAO.findDocuments(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> postBatch(@RequestBody Batch batchObj, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> postBatch(@RequestBody Batch batchObj, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(batchDAO.save(batchObj), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
-    public ResponseEntity<?> deleteBatch(@PathVariable int id, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> deleteBatch(@PathVariable int id, @RequestParam(value = "user") User user) {
         batchDAO.delete(id);
         return new ResponseEntity<>("batch deleted, amigo.", HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{id}/add/user")
-    public ResponseEntity<?> postAddUser(@PathVariable int id, @RequestBody User userObj, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> postAddUser(@PathVariable int id, @RequestBody User userObj, @RequestParam(value = "user") User user) {
         List<String> previouslyCodedDocuments = documentDAO.verifyUser(id, userObj.getEmail());
         if (previouslyCodedDocuments.isEmpty()) {
             Batch batchObj = batchDAO.find(id);
@@ -160,50 +117,26 @@ public class BatchController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{id}/delete/user/{email:.+}")
-    public ResponseEntity<?> deleteUser(@PathVariable int id, @PathVariable String email, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> deleteUser(@PathVariable int id, @PathVariable String email, @RequestParam(value = "user") User user) {
         Batch batchObj = batchDAO.find(id);
         batchDAO.deleteUser(id, email);
         return new ResponseEntity<>("user deleted, comrade", HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{batchid}/add/document/{docid}")
-    public ResponseEntity<?> postAddDocument(@PathVariable int batchid, @PathVariable String docid, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> postAddDocument(@PathVariable int batchid, @PathVariable String docid, @RequestParam(value = "user") User user) {
         batchDAO.addDocument(batchid, docid);
         return new ResponseEntity<>("document added, pal", HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{batchid}/delete/document/{docid}")
-    public ResponseEntity<?> deleteDocument(@PathVariable int batchid, @PathVariable String docid, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> deleteDocument(@PathVariable int batchid, @PathVariable String docid, @RequestParam(value = "user") User user) {
         batchDAO.deleteDocument(batchid, docid);
         return new ResponseEntity<>("document deleted, chum", HttpStatus.OK);
     }
     
     @RequestMapping(method = RequestMethod.GET, value = "/assignment_types")
-    public ResponseEntity<?> getAssignmentTypes(@RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<?> getAssignmentTypes(@RequestParam(value = "user") User user) {
         return new ResponseEntity<>(assignmentTypeDAO.list(), HttpStatus.OK);
     }
     

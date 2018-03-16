@@ -55,17 +55,20 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{email:.+}")
-    public ResponseEntity<?> getUser(@PathVariable String email, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> getUser(@PathVariable String email, 
+            @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(userDAO.find(email), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> postUser(@RequestBody User userObj, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> postUser(@RequestBody User userObj, 
+            @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(userDAO.save(userObj), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{email:.+}/batches")
-    public ResponseEntity<?> getUserBatches(@PathVariable String email, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> getUserBatches(@PathVariable String email, 
+            @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(userDAO.findBatches(email), HttpStatus.OK);
     }
 }
