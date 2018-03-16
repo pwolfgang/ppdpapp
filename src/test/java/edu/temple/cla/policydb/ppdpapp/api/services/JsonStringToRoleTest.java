@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,31 +29,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.daos;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
-import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import java.util.List;
+import edu.temple.cla.policydb.ppdpapp.api.models.Role;
+import static org.junit.Assert.assertEquals;
+import org.springframework.core.convert.converter.Converter;
 
-public interface BatchDAO {
+/**
+ *
+ * @author Paul
+ */
+public class JsonStringToRoleTest {
+    
+    public JsonStringToRoleTest() {
+    }
 
-    public List<Batch> list();
-
-    public Batch find(int id);
-
-    public Batch save(Batch batchObj);
-
-    public void create(Batch batchObj);
-
-    public void delete(int id);
-
-    public List<User> findUsers(int id);
-
-    public List<Object[]> findDocuments(int id);
-
-    public void addDocument(int batchID, String docID);
-
-    public void deleteDocument(int batchID, String docID);
-
-    public void deleteUser(int batchID, String email);
+    @org.junit.Test
+    public void testConvert() {
+        String source = "{\"roleID\":1, \"name\":\"admin\"}";
+        Converter<String, Role> c = new JsonStringToRole();
+        Role role = c.convert(source);
+        Role expected = new Role();
+        expected.setRoleID(1);
+        expected.setName("admin");
+        assertEquals(expected, role);
+    }
+    
 }

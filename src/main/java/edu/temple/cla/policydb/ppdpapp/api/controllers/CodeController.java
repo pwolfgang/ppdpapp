@@ -52,46 +52,22 @@ public class CodeController {
     private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET, value = "/{tableName}")
-    public ResponseEntity getCodes(@PathVariable String tableName, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity<List<Object>>(codeDAO.list(tableName), HttpStatus.OK);
+    public ResponseEntity<?> getCodes(@PathVariable String tableName, @RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(codeDAO.list(tableName), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{majorOrMinor}")
-    public ResponseEntity getCodesByMajorOrMinor(@PathVariable String tableName, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity<List<Object>>(codeDAO.listMajorMinor(tableName), HttpStatus.OK);
+    public ResponseEntity<?> getCodesByMajorOrMinor(@PathVariable String tableName, @RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(codeDAO.listMajorMinor(tableName), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{tableName}/{id}")
-    public ResponseEntity getCode(@PathVariable String tableName, @PathVariable int id, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity<Object>(codeDAO.find(tableName, id), HttpStatus.OK);
+    public ResponseEntity<?> getCode(@PathVariable String tableName, @PathVariable int id, @RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(codeDAO.find(tableName, id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{tableName}/search/")
-    public ResponseEntity getCodeSearch(@PathVariable String tableName, @RequestParam(value = "query") String query, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity<List<Object>>(codeDAO.findSearch(tableName, query), HttpStatus.OK);
+    public ResponseEntity<?> getCodeSearch(@PathVariable String tableName, @RequestParam(value = "query") String query, @RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(codeDAO.findSearch(tableName, query), HttpStatus.OK);
     }
 }

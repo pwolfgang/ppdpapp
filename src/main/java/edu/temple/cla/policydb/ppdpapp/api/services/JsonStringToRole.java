@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,31 +29,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.daos;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
-import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.temple.cla.policydb.ppdpapp.api.models.Role;
+import java.io.IOException;
+import org.apache.log4j.Logger;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-public interface BatchDAO {
-
-    public List<Batch> list();
-
-    public Batch find(int id);
-
-    public Batch save(Batch batchObj);
-
-    public void create(Batch batchObj);
-
-    public void delete(int id);
-
-    public List<User> findUsers(int id);
-
-    public List<Object[]> findDocuments(int id);
-
-    public void addDocument(int batchID, String docID);
-
-    public void deleteDocument(int batchID, String docID);
-
-    public void deleteUser(int batchID, String email);
+/**
+ *
+ * @author Paul
+ */
+@Component
+public class JsonStringToRole implements Converter<String, Role> {
+    
+    private static final Logger LOGGER = Logger.getLogger(JsonStringToRole.class);
+    
+    @Override
+    public Role convert(String source) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Role role = mapper.readValue(source, Role.class);
+            return role;
+        } catch (IOException ioex) {
+            LOGGER.error("Error converting " + source, ioex);
+            return null;
+        }
+    }
+    
 }

@@ -53,9 +53,15 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAOImpl;
+import edu.temple.cla.policydb.ppdpapp.api.models.Role;
+import edu.temple.cla.policydb.ppdpapp.api.models.User;
+import edu.temple.cla.policydb.ppdpapp.api.services.JsonStringToRole;
+import edu.temple.cla.policydb.ppdpapp.api.services.JsonStringToUser;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import edu.temple.cla.policydb.ppdpapp.ldap.LDAP;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.servlet.MultipartConfigElement;
@@ -66,15 +72,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ConversionServiceFactoryBean;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.jndi.JndiObjectFactoryBean;
-import org.springframework.orm.hibernate4.HibernateTransactionManager;
-import org.springframework.orm.hibernate4.LocalSessionFactoryBuilder;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 @Configuration
 @ComponentScan
 public class Application {
-
+    
     @Bean(name="ldap")
     public LDAP getLdap() {
         try {

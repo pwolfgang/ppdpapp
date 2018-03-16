@@ -53,25 +53,14 @@ public class NewspaperController {
     private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity getNewspapers(@RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
-        return new ResponseEntity<List<Newspaper>>(NewspaperDAO.list(), HttpStatus.OK);
+    public ResponseEntity<?> getNewspapers(@RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(NewspaperDAO.list(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/add/{name}")
-    public ResponseEntity postNewspapers(@PathVariable String name, @RequestParam(value = "token") String token) {
-        User user = null;
-        try {
-            user = accountSvc.doAuthentication(token);
-        } catch (Exception e) {
-            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity postNewspapers(@PathVariable String name, 
+            @RequestParam(value = "user") User user) {
         NewspaperDAO.add(name);
-        return new ResponseEntity<String>("newspaper added, m8 (pronounced 'mate')", HttpStatus.OK);
+        return new ResponseEntity<>("newspaper added", HttpStatus.OK);
     }
 }

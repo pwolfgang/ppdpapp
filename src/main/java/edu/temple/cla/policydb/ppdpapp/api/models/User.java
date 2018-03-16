@@ -32,6 +32,8 @@
 package edu.temple.cla.policydb.ppdpapp.api.models;
 
 import java.util.Date;
+import java.util.Objects;
+import java.util.StringJoiner;
 import javax.persistence.*;
 
 //import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -134,5 +136,31 @@ public class User {
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
-
+    
+    public String toJson() {
+        StringJoiner sj = new StringJoiner(",", "{", "}");
+        sj.add("\"email\":\"" + email + "\"");
+        sj.add("\"role\":" + role.toJson());
+        sj.add("\"firstName\":\"" + firstName + "\"");
+        sj.add("\"lastName\":\"" + lastName + "\"");
+        sj.add("\"isActive\":" + isActive );
+        sj.add("\"dateAdded\":\"" + dateAdded + "\"");
+        sj.add("\"accessToken\":\"" + accessToken + "\"");
+        return sj.toString();
+    }
+    
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (this.getClass() == o.getClass()) {
+            User other = (User) o;
+            if (!Objects.equals(email, other.email)) return false;
+            if (!Objects.equals(role, other.role)) return false;
+            if (!Objects.equals(firstName, other.firstName)) return false;
+            if (!Objects.equals(lastName, other.lastName)) return false;
+            if (isActive != other.isActive) return false;
+            return Objects.equals(dateAdded, other.dateAdded);
+        } else {
+            return false;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,31 +29,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.daos;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
+import edu.temple.cla.policydb.ppdpapp.api.models.Role;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import java.util.List;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public interface BatchDAO {
+/**
+ *
+ * @author Paul
+ */
+public class JsonStringToUserTest {
+    
+    public JsonStringToUserTest() {
+    }
 
-    public List<Batch> list();
-
-    public Batch find(int id);
-
-    public Batch save(Batch batchObj);
-
-    public void create(Batch batchObj);
-
-    public void delete(int id);
-
-    public List<User> findUsers(int id);
-
-    public List<Object[]> findDocuments(int id);
-
-    public void addDocument(int batchID, String docID);
-
-    public void deleteDocument(int batchID, String docID);
-
-    public void deleteUser(int batchID, String email);
+    @Test
+    public void testConvert() {
+        System.out.println("convert");
+        User expResult = new User();
+        expResult.setEmail("admin@temple.edu");
+        Role role = new Role();
+        role.setRoleID(1);
+        role.setName("admin");
+        expResult.setRole(role);
+        expResult.setFirstName("admin");
+        expResult.setLastName("user");
+        expResult.setIsActive(true);
+        String source = expResult.toJson();
+        JsonStringToUser instance = new JsonStringToUser();
+        User result = instance.convert(source);
+        assertEquals(expResult, result);
+    }
+    
 }

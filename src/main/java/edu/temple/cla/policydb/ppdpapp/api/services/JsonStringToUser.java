@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,31 +29,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.daos;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import java.util.List;
+import java.io.IOException;
+import org.apache.log4j.Logger;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-public interface BatchDAO {
+/**
+ *
+ * @author Paul
+ */
+@Component
+public class JsonStringToUser implements Converter<String, User> {
 
-    public List<Batch> list();
+    private static final Logger LOGGER = Logger.getLogger(JsonStringToUser.class);
+    
+    @Override
+    public User convert(String source) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            User user = mapper.readValue(source, User.class);
+            return user;
+        } catch (IOException ioex) {
+            LOGGER.error("Error converting " + source, ioex);
+            return null;
+        }
+    }
 
-    public Batch find(int id);
-
-    public Batch save(Batch batchObj);
-
-    public void create(Batch batchObj);
-
-    public void delete(int id);
-
-    public List<User> findUsers(int id);
-
-    public List<Object[]> findDocuments(int id);
-
-    public void addDocument(int batchID, String docID);
-
-    public void deleteDocument(int batchID, String docID);
-
-    public void deleteUser(int batchID, String email);
 }
+

@@ -31,9 +31,22 @@
  */
 package edu.temple.cla.policydb.ppdpapp.config;
 
+
+import edu.temple.cla.policydb.ppdpapp.api.servlets.MyDispatcherServlet;
+import org.apache.log4j.Logger;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.FrameworkServlet;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class PPDPAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+    
+    private static final Logger LOGGER = Logger.getLogger(PPDPAppInitializer.class);
+    
+    @Override
+    protected FrameworkServlet createDispatcherServlet(WebApplicationContext servletContext) {
+        LOGGER.info("My createDispatcherServlet called");
+        return new MyDispatcherServlet(servletContext);
+    }
     
     @Override
     protected String[] getServletMappings() {
