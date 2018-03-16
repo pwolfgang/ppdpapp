@@ -33,6 +33,7 @@ package edu.temple.cla.policydb.ppdpapp.api.daos;
 
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
@@ -40,12 +41,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import org.hibernate.query.NativeQuery;
 
 public class FileDAOImpl implements FileDAO {
 
     @Autowired
-    private final SessionFactory sessionFactory;
+    private SessionFactory sessionFactory;
 
     public FileDAOImpl(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
@@ -54,17 +54,13 @@ public class FileDAOImpl implements FileDAO {
     @Override
     @Transactional
     public List<File> list() {
-        return (List<File>) sessionFactory
-                .getCurrentSession()
-                .createCriteria(File.class)
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-                .list();
+        return (List<File>) sessionFactory.getCurrentSession().createCriteria(File.class).setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).list();
     }
 
     @Override
     @Transactional
     public File find(int id) {
-        return sessionFactory.getCurrentSession().get(File.class, id);
+        return (File) sessionFactory.getCurrentSession().get(File.class, id);
     }
 
     @Override
@@ -78,7 +74,7 @@ public class FileDAOImpl implements FileDAO {
     @Transactional
     public Object findBatchByFileID(int fileid) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM Batches WHERE FileID = " + fileid);
+        SQLQuery query = sess.createSQLQuery("SELECT * FROM Batches WHERE FileID = " + fileid);
         query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         return query.uniqueResult();
     }
@@ -87,7 +83,7 @@ public class FileDAOImpl implements FileDAO {
     @Transactional
     public int create(File fileObj) {
         Session sess = sessionFactory.getCurrentSession();
-       NativeQuery query = sess.createNativeQuery("INSERT INTO Files (Name, FileURL, DateAdded, Creator)"
+       SQLQuery query = sess.createSQLQuery("INSERT INTO Files (Name, FileURL, DateAdded, Creator)"
                 + "Values('" + fileObj.getName() + "','" + fileObj.getFileURL() + "'," + fileObj.getDateAdded() + "'," + fileObj.getCreator() + "'");
         query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         return query.executeUpdate();

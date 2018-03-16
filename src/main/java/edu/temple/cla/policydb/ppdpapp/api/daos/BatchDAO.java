@@ -49,7 +49,7 @@ public interface BatchDAO {
 
     public List<User> findUsers(int id);
 
-    public List<Object[]> findDocuments(int id);
+    public List<Object> findDocuments(int id);
 
     public void addDocument(int batchID, String docID);
 

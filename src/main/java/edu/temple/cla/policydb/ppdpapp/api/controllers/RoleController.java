@@ -53,13 +53,24 @@ public class RoleController {
     private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity getRoles(@RequestParam(value = "user") User user) {
+    public ResponseEntity getRoles(@RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<List<Role>>(roleDAO.list(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")
-    public ResponseEntity getRole(@PathVariable int id, 
-            @RequestParam(value = "user") User user) {
+    public ResponseEntity getRole(@PathVariable int id, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<Role>(roleDAO.find(id), HttpStatus.OK);
     }
 }

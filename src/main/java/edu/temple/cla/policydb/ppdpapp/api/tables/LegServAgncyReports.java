@@ -31,12 +31,12 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.Map;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.hibernate.query.NativeQuery;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,22 +51,21 @@ public class LegServAgncyReports extends AbstractTable {
     @Override
     @Transactional
     public ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file) {
-        try (Session sess = getSessionFactory().openSession()) {
+        Session sess = getSessionFactory().openSession();
+        try {
             ObjectMapper mapper = new ObjectMapper();
             @SuppressWarnings("unchecked")
             Map<String, Object> report = mapper.readValue(docObjJson, Map.class);
             String agency = (String) report.get("Organization");
-            NativeQuery<String> getAgencyID = 
-                    sess.createNativeQuery("select ID from LegServiceAgencies where Agency=\'" + agency + "\'",
-                            String.class);
-            String agencyID = getAgencyID.uniqueResult();
+            SQLQuery getAgencyID = sess.createSQLQuery("select ID from LegServiceAgencies where Agency=\'" + agency + "\'");
+            String agencyID = (String) getAgencyID.uniqueResult();
             String date = (String) report.get("Date");
             String[] dateTokens = date.split("-");
             String year = dateTokens[0];
             String title = (String) report.get("Title");
             String lastIdQuery = String.format("select max(ID) from LSAReportsText where ID like(\"%s_%s_%%\")", agencyID, year);
-            NativeQuery<String> getLastId = sess.createNativeQuery(lastIdQuery, String.class);
-            String lastId = getLastId.uniqueResult();
+            SQLQuery getLastId = sess.createSQLQuery(lastIdQuery);
+            String lastId = (String) getLastId.uniqueResult();
             int lastIdNum = 0;
             if (lastId != null) {
                 lastIdNum = Integer.parseInt(lastId.split("_")[2]);
@@ -83,15 +82,15 @@ public class LegServAgncyReports extends AbstractTable {
                         stream.write(bytes);
                         stream.flush();
                     } 
-                    NativeQuery<?> updateLSAReports = sess.createNativeQuery(
+                    SQLQuery updateLSAReports = sess.createSQLQuery(
                             "insert into LSAReportsText (ID, Year, Agency, "
                                     + "Title, FileName) values "
                                     + "(?, ?, ?, ?, ?)");
-                    updateLSAReports.setParameter(0, newId);
-                    updateLSAReports.setParameter(1, year);
-                    updateLSAReports.setParameter(2, agency);
-                    updateLSAReports.setParameter(3, title);
-                    updateLSAReports.setParameter(4, fileName);
+                    updateLSAReports.setString(0, newId);
+                    updateLSAReports.setString(1, year);
+                    updateLSAReports.setString(2, agency);
+                    updateLSAReports.setString(3, title);
+                    updateLSAReports.setString(4, fileName);
                     updateLSAReports.executeUpdate();
                     String url = "#lsar.spg?ID=" + newId + "#";
                     report.put("Hyperlink", url);
@@ -104,6 +103,8 @@ public class LegServAgncyReports extends AbstractTable {
             }
         } catch (Exception ex) {
             return new ResponseEntity<>(ex.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            sess.close();
         }
     }
 

@@ -52,19 +52,35 @@ public class TablesController {
     private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getTables(@RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(tablesDAO.findTables(), HttpStatus.OK);
+    public ResponseEntity getTables(@RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<Object>(tablesDAO.findTables(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/id/{id}")
-    public ResponseEntity<?> getTablesByID(@PathVariable int id, 
-            @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(tablesDAO.findByID(id), HttpStatus.OK);
+    public ResponseEntity getTablesByID(@PathVariable int id, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<Object>(tablesDAO.findByID(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/name/{tableTitle}")
-    public ResponseEntity<?> getTablesByName(@PathVariable String tableTitle, 
-            @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(tablesDAO.findByName(tableTitle), HttpStatus.OK);
+    public ResponseEntity getTablesByName(@PathVariable String tableTitle, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<Object>(tablesDAO.findByName(tableTitle), HttpStatus.OK);
     }
 }

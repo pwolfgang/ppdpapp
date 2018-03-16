@@ -71,26 +71,48 @@ public class FileController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id:\\d+}")
-    public ResponseEntity<?> getFile(@PathVariable int id, 
-            @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> getFile(@PathVariable int id, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<File>(fileDAO.find(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id:\\d+}/batches")
-    public ResponseEntity<?> getBatchByFileID(@PathVariable int id, 
-            @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> getBatchByFileID(@PathVariable int id, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<Object>(fileDAO.findBatchByFileID(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/update")
-    public ResponseEntity<?> postFile(@RequestBody File fileObj, 
-            @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> postFile(@RequestBody File fileObj, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<File>(fileDAO.save(fileObj), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam(value = "user") User user,
+    public ResponseEntity<?> uploadFile(@RequestParam(value = "token") String token,
             @RequestBody MultipartFile file) throws Exception {
+
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
 
         String fileName = file.getOriginalFilename();
         java.io.File baseDir = new java.io.File("/var/ppdp/files");
@@ -107,17 +129,17 @@ public class FileController {
         if (!file.isEmpty()) {
             try {
                 byte[] bytes = file.getBytes();
-                try (BufferedOutputStream stream = 
-                        new BufferedOutputStream(new FileOutputStream(javaFile))) {
-                    stream.write(bytes);
-                }
+                BufferedOutputStream stream
+                        = new BufferedOutputStream(new FileOutputStream(javaFile));
+                stream.write(bytes);
+                stream.close();
                 fileObj = fileDAO.save(fileObj);
-                return new ResponseEntity<>(fileObj, HttpStatus.OK);
+                return new ResponseEntity<File>(fileObj, HttpStatus.OK);
             } catch (Exception e) {
-                return new ResponseEntity<>(e.toString(), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>(e.toString(), HttpStatus.BAD_REQUEST);
             }
         } else {
-            return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
         }
 
     }
