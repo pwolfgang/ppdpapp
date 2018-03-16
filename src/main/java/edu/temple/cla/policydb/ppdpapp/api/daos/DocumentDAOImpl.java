@@ -469,10 +469,10 @@ public class DocumentDAOImpl implements DocumentDAO {
                 throw new RuntimeException("Insert to UserPolicyCode Failed", e);
             }
             if (batchid == null || batchid.equals("NULL")) {
-                query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = " + codeid
-                    + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + " AND isNull(BatchID));");                
+                query = sess.createSQLQuery("UPDATE UserPolicyCode SET Code = " + codeid
+                    + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + " AND isNull(BatchID))");                
             } else {
-                query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = " + codeid
+                query = sess.createSQLQuery("UPDATE UserPolicyCode SET Code = " + codeid
                     + " WHERE (Email = '" + email + "' and DocumentID = '" + docid + "' and TablesID = " + tableID + " AND BatchID = " + batchid + ");");
             }
             if (query.executeUpdate() != 1) {
