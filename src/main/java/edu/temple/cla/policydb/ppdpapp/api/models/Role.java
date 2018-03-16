@@ -82,14 +82,8 @@ public class Role {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public String toJson() {
-        StringJoiner sj = new StringJoiner(", ", "{", "}");
-        sj.add("\"roleID\":" + roleID);
-        sj.add("\"name\":\"" + name + "\"");
-        return sj.toString();
-    }
-    
+       
+    @Override
     public boolean equals(Object o) {
         if (o == null) return false;
         if (this.getClass() == o.getClass()) {
@@ -98,5 +92,13 @@ public class Role {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + this.roleID;
+        hash = 43 * hash + Objects.hashCode(this.name);
+        return hash;
     }
 }

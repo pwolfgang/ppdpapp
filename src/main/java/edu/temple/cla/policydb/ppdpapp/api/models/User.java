@@ -31,9 +31,11 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.models;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
-import java.util.StringJoiner;
 import javax.persistence.*;
 
 //import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -46,7 +48,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "Users")
-public class User {
+public class User implements Serializable {
 
     /**
      * Annotated properties/fields.
@@ -138,17 +140,27 @@ public class User {
     }
     
     public String toJson() {
-        StringJoiner sj = new StringJoiner(",", "{", "}");
-        sj.add("\"email\":\"" + email + "\"");
-        sj.add("\"role\":" + role.toJson());
-        sj.add("\"firstName\":\"" + firstName + "\"");
-        sj.add("\"lastName\":\"" + lastName + "\"");
-        sj.add("\"isActive\":" + isActive );
-        sj.add("\"dateAdded\":\"" + dateAdded + "\"");
-        sj.add("\"accessToken\":\"" + accessToken + "\"");
-        return sj.toString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + Objects.hashCode(this.email);
+        hash = 79 * hash + Objects.hashCode(this.role);
+        hash = 79 * hash + Objects.hashCode(this.firstName);
+        hash = 79 * hash + Objects.hashCode(this.lastName);
+        hash = 79 * hash + (this.isActive ? 1 : 0);
+        hash = 79 * hash + Objects.hashCode(this.dateAdded);
+        return hash;
     }
     
+    @Override
     public boolean equals(Object o) {
         if (o == null) return false;
         if (this.getClass() == o.getClass()) {
