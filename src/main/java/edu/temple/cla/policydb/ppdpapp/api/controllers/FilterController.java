@@ -53,13 +53,24 @@ public class FilterController {
     private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getFilters(@RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(FilterDAO.list(), HttpStatus.OK);
+    public ResponseEntity getFilters(@RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<List<Filter>>(FilterDAO.list(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id:.+}")
-    public ResponseEntity<?> getFilter(@PathVariable Integer id, 
-            @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(FilterDAO.find(id), HttpStatus.OK);
+    public ResponseEntity getFilter(@PathVariable Integer id, @RequestParam(value = "token") String token) {
+        User user = null;
+        try {
+            user = accountSvc.doAuthentication(token);
+        } catch (Exception e) {
+            return new ResponseEntity<String>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<Filter>(FilterDAO.find(id), HttpStatus.OK);
     }
 }
