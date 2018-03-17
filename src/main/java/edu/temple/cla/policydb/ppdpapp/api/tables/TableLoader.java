@@ -43,9 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +78,7 @@ public class TableLoader {
         if (tableList == null) {
             final Session sess = sessionFactory.getCurrentSession();
             try {
-            SQLQuery tableQuery = sess.createSQLQuery("SELECT * FROM Tables ORDER BY ID");
+            NativeQuery tableQuery = sess.createNativeQuery("SELECT * FROM Tables ORDER BY ID");
             tableQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> tableObjectMapList = tableQuery.list();
@@ -136,14 +136,16 @@ public class TableLoader {
     private Table loadTable(Map<String, Object> tableObjectMap, Session sess) {
         Table table = mapTable(tableObjectMap);
         int tableId = table.getId();
-        SQLQuery filterQuery = sess.createSQLQuery("SELECT * from Filters WHERE TableID=" + tableId + " ORDER BY ID");
+        NativeQuery filterQuery = sess.createNativeQuery("SELECT * from Filters WHERE TableID=" 
+                + tableId + " ORDER BY ID");
         filterQuery.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> filterObjectList = filterQuery.list();
         List<Filter> filterList = new ArrayList<>();
         filterObjectList.forEach(filterMapObject -> filterList.add(mapFilter(filterMapObject)));
         table.setFilterList(filterList);
-        SQLQuery metaDataQuery = sess.createSQLQuery("SELECT * from MetaData WHERE TableID=" + tableId + " ORDER BY ID");
+        NativeQuery metaDataQuery = sess.createNativeQuery("SELECT * from MetaData WHERE TableID=" 
+                + tableId + " ORDER BY ID");
         metaDataQuery.addEntity(MetaData.class);
         @SuppressWarnings("unchecked")
         List<MetaData> metaDataList = metaDataQuery.list();
@@ -155,7 +157,9 @@ public class TableLoader {
                 metaData.setTypeAheadData(typeAheadData);
             }
         });
-        SQLQuery getColumnNames = sess.createSQLQuery("SELECT column_name from information_schema.columns where table_schema='PAPolicy_Copy' and table_name='" + table.getTableName() + "'");
+        NativeQuery getColumnNames = sess.createNativeQuery("SELECT column_name "
+                + "from information_schema.columns where table_schema='PAPolicy_Copy' "
+                + "and table_name='" + table.getTableName() + "'");
         @SuppressWarnings("unchecked")
         List<String> columns = getColumnNames.list();
         table.setColumns(columns);

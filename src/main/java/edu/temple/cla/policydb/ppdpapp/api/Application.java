@@ -41,10 +41,6 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.FilterDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.FilterDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewsClipTypeDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewsClipTypeDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAO;
@@ -169,12 +165,6 @@ public class Application {
     }
 
     @Autowired
-    @Bean(name = "filterDao")
-    public FilterDAO getFilterDao(SessionFactory sessionFactory) {
-        return new FilterDAOImpl(sessionFactory);
-    }
-
-    @Autowired
     @Bean(name = "newspaperDao")
     public NewspaperDAO getNewspaperDao(SessionFactory sessionFactory) {
         return new NewspaperDAOImpl(sessionFactory);
@@ -196,12 +186,6 @@ public class Application {
     @Bean(name = "tablesDao")
     public TablesDAO getTablesDao(SessionFactory sessionFactory) {
         return new TablesDAOImpl(sessionFactory);
-    }
-
-    @Autowired
-    @Bean(name = "newsClipTypeDao")
-    public NewsClipTypeDAO getNewsClipTypeDao(SessionFactory sessionFactory) {
-        return new NewsClipTypeDAOImpl(sessionFactory);
     }
 
     @Autowired
