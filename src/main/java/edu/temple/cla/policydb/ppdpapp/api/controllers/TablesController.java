@@ -47,8 +47,6 @@ public class TablesController {
 
     @Autowired
     private TablesDAO tablesDAO;
-    @Autowired
-    private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getTables(@RequestParam(value = "user") User user) {
