@@ -35,18 +35,12 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.CodeDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.CodeDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
@@ -147,12 +141,6 @@ public class Application {
     }
 
     @Autowired
-    @Bean(name = "codeDao")
-    public CodeDAO getCodeDao(SessionFactory sessionFactory) {
-        return new CodeDAOImpl(sessionFactory);
-    }
-
-    @Autowired
     @Bean(name = "documentDao")
     public DocumentDAO getDocumentDao(SessionFactory sessionFactory) {
         return new DocumentDAOImpl(sessionFactory);
@@ -165,12 +153,6 @@ public class Application {
     }
 
     @Autowired
-    @Bean(name = "newspaperDao")
-    public NewspaperDAO getNewspaperDao(SessionFactory sessionFactory) {
-        return new NewspaperDAOImpl(sessionFactory);
-    }
-
-    @Autowired
     @Bean(name = "roleDao")
     public RoleDAO getRoleDao(SessionFactory sessionFactory) {
         return new RoleDAOImpl(sessionFactory);
@@ -180,12 +162,6 @@ public class Application {
     @Bean(name = "userDao")
     public UserDAO getUserDao(SessionFactory sessionFactory) {
         return new UserDAOImpl(sessionFactory);
-    }
-
-    @Autowired
-    @Bean(name = "tablesDao")
-    public TablesDAO getTablesDao(SessionFactory sessionFactory) {
-        return new TablesDAOImpl(sessionFactory);
     }
 
     @Autowired

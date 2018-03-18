@@ -179,23 +179,17 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 });
                 };
         }])
-        .controller('${document}CodeCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'codesAPI', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, codesAPI, batchesAPI) {
+        .controller('${document}CodeCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, batchesAPI) {
         $scope.loaded = false;
                 $scope.requestFailed = false;
                 $scope.gridOptions = {};
                 // the reason all results are returned is because the typeahead expects functions to return a new result
                 // that reflects the current value. this method returns all the codes NO MATTER WHAT
                 $scope.external = {
-                loading: false,
-                        searchCodes: function (s) {
-                        return codesAPI.search(authInfo.token, 'Newsclips', s)
-                                .then(function (res) {
-                                return res.data;
-                                });
-                        },
-                        onSelect: function ($item, $model, $label, row) {
+                    loading: false,
+                    onSelect: function ($item, $model, $label, row) {
                         row.entity.Coding = $item.Code;
-                        }
+                    }
                 };
                 $scope.reloadBatchDocs = function () {
                 $scope.loaded = false;
@@ -259,7 +253,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         $location.path(route);
                 };
         }])
-        .controller('${document}TiebreakCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'codesAPI', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, codesAPI, batchesAPI) {
+        .controller('${document}TiebreakCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, batchesAPI) {
         $scope.loaded = false;
                 $scope.requestFailed = false;
                 $scope.gridOptions = {};
@@ -267,12 +261,6 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 // that reflects the current value. this method returns all the codes NO MATTER WHAT
                 $scope.external = {
                 loading: false,
-                        searchCodes: function (s) {
-                        return codesAPI.search(authInfo.token, '${document}', s)
-                                .then(function (res) {
-                                return res.data;
-                                });
-                        },
                         onSelect: function ($item, $model, $label, row) {
                         row.entity.Coding = $item.Code;
                         }
