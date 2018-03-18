@@ -41,6 +41,8 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAOImpl;
+import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAO;
+import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
@@ -168,6 +170,12 @@ public class Application {
     @Bean(name = "assignmentTypeDao")
     public AssignmentTypeDAO getAssignmentTypeDao(SessionFactory sessionFactory) {
         return new AssignmentTypeDAOImpl(sessionFactory);
+    }
+    
+    @Autowired
+    @Bean(name = "tablesDao")
+    public TablesDAO getTablesDao(SessionFactory sessionFactory) {
+        return new TablesDAOImpl(sessionFactory);
     }
     
     @Autowired
