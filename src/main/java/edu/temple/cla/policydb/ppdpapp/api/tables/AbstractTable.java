@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.BinaryFilter;
 import java.util.List;
 import edu.temple.cla.policydb.ppdpapp.api.filters.Filter;
@@ -1148,6 +1149,11 @@ public abstract class AbstractTable implements Table {
     
     @Override
     public ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file) {
+            return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @Override
+    public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
             return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
     }
     

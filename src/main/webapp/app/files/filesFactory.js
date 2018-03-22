@@ -12,9 +12,9 @@ angular.module('filesFactory', [])
                 dataFactory.update = function (token, fileObj) {
                     return $http.post(urlBase + '/update/?token=' + token, fileObj);
                 };
-                dataFactory.upload = function (token, file) {
+                dataFactory.upload = function (token, tableId, file) {
                     return $upload.upload({
-                        url: urlBase + '/upload/?token=' + token,
+                        url: urlBase + '/upload/?token=' + token + '&tableId=' + tableId,
                         file: file
                     });
                 };

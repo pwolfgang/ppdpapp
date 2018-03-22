@@ -32,14 +32,13 @@
 package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
 
-import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import edu.temple.cla.policydb.ppdpapp.api.services.Account;
+import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
+import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
-import java.util.List;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -61,67 +60,40 @@ public class FileController {
     @Autowired
     private FileDAO fileDAO;
     @Autowired
-    private BatchDAO batchDAO;
-    @Autowired
-    private Account accountSvc;
+    private TableLoader tableLoader;
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getFiles() {
-        return new ResponseEntity<List<File>>(fileDAO.list(), HttpStatus.OK);
+        return new ResponseEntity<>(fileDAO.list(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id:\\d+}")
     public ResponseEntity<?> getFile(@PathVariable int id, 
             @RequestParam(value = "user") User user) {
-        return new ResponseEntity<File>(fileDAO.find(id), HttpStatus.OK);
+        return new ResponseEntity<>(fileDAO.find(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{id:\\d+}/batches")
     public ResponseEntity<?> getBatchByFileID(@PathVariable int id, 
             @RequestParam(value = "user") User user) {
-        return new ResponseEntity<Object>(fileDAO.findBatchByFileID(id), HttpStatus.OK);
+        return new ResponseEntity<>(fileDAO.findBatchByFileID(id), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/update")
     public ResponseEntity<?> postFile(@RequestBody File fileObj, 
             @RequestParam(value = "user") User user) {
-        return new ResponseEntity<File>(fileDAO.save(fileObj), HttpStatus.OK);
+        return new ResponseEntity<>(fileDAO.save(fileObj), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/upload")
     public ResponseEntity<?> uploadFile(@RequestParam(value = "user") User user,
+            @RequestParam(value="tableId") int tableId,
             @RequestBody MultipartFile file) throws Exception {
-
-        String fileName = file.getOriginalFilename();
-        java.io.File baseDir = new java.io.File("/var/ppdp/files");
-        java.io.File javaFile = new java.io.File(baseDir, fileName);
-        File fileObj = new File();
-        try {
-            URL fileURL = javaFile.toURI().toURL();
-            fileObj.setFileURL(fileURL.toString());
-        } catch (MalformedURLException ex) {
-            // cannot happen
-        }
-        fileObj.setContentType(file.getContentType());
-
-        if (!file.isEmpty()) {
-            try {
-                byte[] bytes = file.getBytes();
-                try (BufferedOutputStream stream = 
-                        new BufferedOutputStream(new FileOutputStream(javaFile))) {
-                    stream.write(bytes);
-                }
-                fileObj = fileDAO.save(fileObj);
-                return new ResponseEntity<>(fileObj, HttpStatus.OK);
-            } catch (Exception e) {
-                return new ResponseEntity<>(e.toString(), HttpStatus.BAD_REQUEST);
-            }
-        } else {
-            return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
-        }
-
+        
+        Table table = tableLoader.getTableById(tableId);
+        return table.uploadFile(fileDAO, file);
     }
-
+        
     @RequestMapping(method = RequestMethod.GET, value = "/download/{id:\\d+}")
     public void doDownload(HttpServletRequest request, 
             HttpServletResponse response) throws Exception {

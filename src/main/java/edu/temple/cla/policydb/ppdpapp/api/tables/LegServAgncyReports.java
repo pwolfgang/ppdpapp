@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.Map;
+import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,8 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Paul
  */
 public class LegServAgncyReports extends AbstractTable {
+    
+    private static final Logger LOGGER = Logger.getLogger(LegServAgncyReports.class);
 
     @Override
     @Transactional
@@ -97,7 +100,9 @@ public class LegServAgncyReports extends AbstractTable {
                     report.put("Hyperlink", url);
                     return new ResponseEntity<>(report, HttpStatus.OK);
                 } catch (Exception e) {
-                    return new ResponseEntity<>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+                    LOGGER.error("Error uploading file", e);
+                    return new ResponseEntity<>("Error uploading file, see log for details", 
+                            HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             } else {
                 return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
