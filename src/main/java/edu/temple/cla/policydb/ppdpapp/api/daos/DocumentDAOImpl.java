@@ -107,21 +107,6 @@ public class DocumentDAOImpl implements DocumentDAO {
         return queryList;
     }
 
-    private List<Map<String, Object>> applyStatusToQueryResult(NativeQuery query, Map<String, Integer> statMap, int desiredStat) {
-        query.setResultTransformer(SpecialAliasToEntityMapResultTransformer.INSTANCE);
-        List<Map<String, Object>> queryList = query.list();
-        List<Map<String, Object>> result = new ArrayList<>();
-        queryList.forEach(entry -> {
-            String id = (String) entry.get("ID");
-            Integer stat = statMap.getOrDefault(id, 0);
-            if (stat == desiredStat) {
-                entry.put("stat", stat);
-                result.add(entry);
-            }
-        });
-        return result;
-    }
-
     private Map<String, Integer> getStatMap(Session sess, int tableID) {
         Table table = tableLoader.getTableById(tableID);
         int maxNumberOfCodes = table.getNumCodesRequired();
@@ -150,7 +135,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         Table table = tableLoader.getTableByTableName(tableName);
         int tableID = table.getId();
         String codeColumn = table.getCodeColumn();
-        Integer desiredStat = null;
+        int desiredStat = -1;
         switch (assignmentType) {
             case 2:
                 desiredStat = 0;
@@ -173,7 +158,10 @@ public class DocumentDAOImpl implements DocumentDAO {
                 + "AssignmentTypeID=" + assignmentType + " "
                 + "AND bd.TablesID = " + tableID + ") Order By ID Desc");
         try {
-            List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap, desiredStat);
+            List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
+            if (desiredStat == -1) {
+                return queryList;
+            }
             List<Map<String, Object>> filteredQueryList = new ArrayList<>();
             for (Map<String, Object> entry : queryList) {
                 if (entry.get("stat").equals(desiredStat)) {
