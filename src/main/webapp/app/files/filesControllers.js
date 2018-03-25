@@ -24,7 +24,7 @@ angular.module('filesControllers', ['filesFactory'])
                                 $scope.requestFailed = false;
                             })
                             .error(function (res, status) {
-                                $scope.res = res;
+                                $scope.errMsg = res;
                                 $scope.status = status;
                                 $scope.loaded = false;
                                 $scope.requestFailed = true;

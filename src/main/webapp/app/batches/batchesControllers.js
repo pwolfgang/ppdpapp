@@ -30,7 +30,8 @@ batches.controller('batchesCtrl', ['$scope', '$location', '$q', 'batchesAPI', 't
                         $scope.loaded = true;
                         $scope.requestFailed = false;
                     })
-                    .error(function () {
+                    .error(function (res) {
+                        $scope.errMsg = res;
                         $scope.loaded = false;
                         $scope.requestFailed = true;
                     });
@@ -102,7 +103,8 @@ batches.controller('batchViewUsersCtrl', ['$scope', '$location', '$routeParams',
                 $scope.gridBatchUsersOptions.data = res;
                 $scope.loaded = true;
                 $scope.requestFailed = false;
-            }).error(function () {
+            }).error(function (res) {
+                $scope.errMsg = res;
                 $scope.loaded = false;
                 $scope.requestFailed = true;
             });
@@ -114,7 +116,8 @@ batches.controller('batchViewUsersCtrl', ['$scope', '$location', '$routeParams',
                 $scope.gridUsersOptions.data = res;
                 $scope.loaded = true;
                 $scope.requestFailed = false;
-            }).error(function () {
+            }).error(function (res) {
+                $scope.errMsg = res;
                 $scope.loaded = false;
                 $scope.requestFailed = true;
             });

@@ -182,7 +182,8 @@ public class DocumentDAOImpl implements DocumentDAO {
             }
             return filteredQueryList;
         } catch (Exception ex) {
-            throw new RuntimeException("Error in query " + query, ex);
+            String sqlQuery = query.getQueryString();
+            throw new RuntimeException("Error in query " + sqlQuery, ex);
         }
     }
 
