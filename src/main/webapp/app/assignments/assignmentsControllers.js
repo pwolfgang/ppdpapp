@@ -13,8 +13,8 @@ acct.controller('assignmentsCtrl', ['$scope', '$location', 'assignmentsAPI', 'ta
             columnDefs: [
                 {name: 'Created By', field: 'creator'},
                 {name: 'Assignment Type', field: 'assignmentDescription'},
-                {name: 'Date Added', field: 'dateAdded'},
-                {name: 'Date Due', field: 'dateDue'},
+                {name: 'Date Added', field: 'dateAdded', cellFilter: 'date:\'mediumDate\''},
+                {name: 'Date Due', field: 'dateDue', cellFilter: 'date:\'mediumDate\''},
                 {name: 'Assigned To', field: 'users[0].lastName'},
                 {name: 'View', cellTemplate: 'app/assignments/partials/cellTemplate_assignments.html'}
             ]
