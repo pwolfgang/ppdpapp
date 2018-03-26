@@ -9,7 +9,7 @@ angular.module('filesControllers', ['filesFactory'])
                         {name: 'ID', field: 'fileID'},
                         {field: 'name'},
                         {name: 'Creator', field: 'creator'},
-                        {name: 'dateAdded', field: 'dateAdded'},
+                        {name: 'dateAdded', field: 'dateAdded', cellFilter: 'date:\'mediumDate\''},
                         {name: 'View', cellTemplate: 'app/files/partials/cellTemplate_files.html'}
                     ]
                 };

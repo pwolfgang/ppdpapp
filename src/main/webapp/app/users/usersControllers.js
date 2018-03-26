@@ -8,7 +8,7 @@ users.controller('usersCtrl', ['$scope', 'usersAPI', 'authInfo', function ($scop
                 {field: 'firstName'},
                 {field: 'lastName'},
                 {field: 'isActive'},
-                {field: 'dateAdded'}];
+                {field: 'dateAdded', cellFilter: 'date:\'mediumDate\''}];
         $scope.loaded = false;
         $scope.requestFailed = false;
 

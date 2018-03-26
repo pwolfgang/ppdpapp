@@ -15,8 +15,8 @@ batches.controller('batchesCtrl', ['$scope', '$location', '$q', 'batchesAPI', 't
                 {name: 'Created By', field: 'creator'},
                 {field: 'name'},
                 {name: 'Assignment Type', field: 'assignmentDescription'},
-                {name: 'Date Added', field: 'dateAdded'},
-                {name: 'Date Due', field: 'dateDue'},
+                {name: 'Date Added', field: 'dateAdded', cellFilter: 'date:\'mediumDate\''},
+                {name: 'Date Due', field: 'dateDue', cellFilter: 'date:\'mediumDate\''},
                 {name: 'View', cellTemplate: 'app/batches/partials/cellTemplate_batches.html'}
             ]
         };
