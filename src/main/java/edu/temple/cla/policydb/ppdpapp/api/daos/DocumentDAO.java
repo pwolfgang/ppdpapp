@@ -58,7 +58,7 @@ public interface DocumentDAO {
         
     public Object findDocument(String docType, String id);
 
-    public List<Map<String, String>> findDocumentCodes(String tableName, String id);
+    public List<Map<String, Object>> findDocumentCodes(String tableName, String id);
     
     public Object findDocumentCode(String tableName, String id, String email);
 

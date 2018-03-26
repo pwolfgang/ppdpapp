@@ -47,7 +47,8 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import edu.temple.cla.policydb.ppdpapp.ldap.LDAP;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.servlet.MultipartConfigElement;
@@ -75,7 +76,7 @@ public class Application {
             String ldapURL = (String) envCtx.lookup("ldapURL");
             String ldapPrincipal = (String) envCtx.lookup("ldapPrinciapl");
             String ldapCredentials = (String) envCtx.lookup("ldapCredentials");
-            Hashtable<String, String> ldappw = new Hashtable<>();
+            Map<String, String> ldappw = new HashMap<>();
             ldappw.put(Context.PROVIDER_URL, ldapURL);
             ldappw.put(Context.SECURITY_PRINCIPAL, ldapPrincipal);
             ldappw.put(Context.SECURITY_CREDENTIALS, ldapCredentials);

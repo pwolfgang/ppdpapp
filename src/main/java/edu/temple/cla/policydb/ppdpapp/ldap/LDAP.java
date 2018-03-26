@@ -31,7 +31,10 @@
  */
 package edu.temple.cla.policydb.ppdpapp.ldap;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
@@ -40,18 +43,22 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchResult;
+import org.apache.log4j.Logger;
 
 public class LDAP {
     
-    private Hashtable<String, String> masterEnv;
+    private static final Logger LOGGER = Logger.getLogger(LDAP.class);
     
-    public LDAP(Hashtable<String, String> env) {
-        masterEnv = env;
-        masterEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        masterEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
+    private final Map<String, String> masterEnv;
+    
+    public LDAP(Map<String, String> env) {
+        HashMap<String, String> envCopy = new HashMap<>(env);
+        envCopy.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        envCopy.put(Context.SECURITY_AUTHENTICATION, "simple");
+        masterEnv = Collections.unmodifiableMap(envCopy);
     }
     
-    public Object[] authorize(String uid, String pw) {
+    public synchronized Object[] authorize(String uid, String pw) {
         try {
             Hashtable<String, String> env = new Hashtable<>(masterEnv);
             DirContext ctx = new InitialDirContext(env);
@@ -70,6 +77,7 @@ public class LDAP {
             DirContext ctx2 = new InitialDirContext(env);
             return new Object[]{true, "OK"};
         } catch (Throwable ex1) {
+            LOGGER.error("Login Failure: uid="+uid, ex1);
             return new Object[]{false, ex1.toString()};
         }
     }
