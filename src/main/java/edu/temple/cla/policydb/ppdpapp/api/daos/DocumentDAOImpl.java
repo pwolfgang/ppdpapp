@@ -38,10 +38,12 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import static java.util.Collections.emptyMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.persistence.Tuple;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
-import org.hibernate.SQLQuery;
 import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,7 +72,9 @@ public class DocumentDAOImpl implements DocumentDAO {
         Session sess = sessionFactory.getCurrentSession();
         Integer tableID = tablesIDByName(tableName);
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery query = sess.createNativeQuery("select * from " + tableName + " order by ID desc");
+        NativeQuery<Tuple> query = 
+                sess.createNativeQuery("select * from " + tableName 
+                        + " order by ID desc", Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
             return queryList;
@@ -86,8 +90,10 @@ public class DocumentDAOImpl implements DocumentDAO {
         Integer tableID = tablesIDByName(docType);
         int startRow = page * 25;
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery query = sess.createNativeQuery("select * from " + docType + " order by ID desc"
-                + " LIMIT " + startRow + ", 25");
+        NativeQuery<Tuple> query = 
+                sess.createNativeQuery("select * from " + docType 
+                        + " order by ID desc" 
+                        + " LIMIT " + startRow + ", 25", Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
             return queryList;
@@ -96,9 +102,10 @@ public class DocumentDAOImpl implements DocumentDAO {
         }
     }
 
-    private List<Map<String, Object>> applyStatusToQueryResult(NativeQuery query, Map<String, Integer> statMap) {
-        query.setResultTransformer(SpecialAliasToEntityMapResultTransformer.INSTANCE);
-        List<Map<String, Object>> queryList = query.list();
+    private List<Map<String, Object>> 
+        applyStatusToQueryResult(NativeQuery<Tuple> query, Map<String, Integer> statMap) {
+        List<Map<String, Object>> queryList = query.stream()
+                .map(SPECIAL_TRANSFORM).collect(Collectors.toList());
         queryList.forEach(entry -> {
             String id = (String) entry.get("ID");
             Integer stat = statMap.getOrDefault(id, 0);
@@ -106,13 +113,27 @@ public class DocumentDAOImpl implements DocumentDAO {
         });
         return queryList;
     }
+        
+    private static final Function<Tuple, Map<String, Object>> SPECIAL_TRANSFORM = 
+        (tuple -> {    
+            Map<String, Object> map = new HashMap<>();
+            tuple.getElements().forEach(element -> {
+                String alias = element.getAlias();
+                Object value = tuple.get(alias);
+                if (alias.equals("ID")) {
+                    value = value.toString();
+                }
+                map.put(alias, value);
+            });
+            return map;
+        });
 
     private Map<String, Integer> getStatMap(Session sess, int tableID) {
         Table table = tableLoader.getTableById(tableID);
         int maxNumberOfCodes = table.getNumCodesRequired();
-        NativeQuery statusQuery = sess.createNativeQuery("select DocumentID, "
+        NativeQuery<Object[]> statusQuery = sess.createNativeQuery("select DocumentID, "
                 + "count(DocumentID) as stat from UserPolicyCode where "
-                + "TablesID=" + tableID + " group by DocumentID");
+                + "TablesID=" + tableID + " group by DocumentID", Object[].class);
         List<Object[]> statList = statusQuery.list();
         Map<String, Integer> statMap = new HashMap<>();
         statList.forEach(row -> {
@@ -130,7 +151,8 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     @Transactional
-    public List<Map<String, Object>> findDocumentsNoBatch(String tableName, int assignmentType, int batch_id) {
+    public List<Map<String, Object>> 
+        findDocumentsNoBatch(String tableName, int assignmentType, int batch_id) {
         Session sess = sessionFactory.getCurrentSession();
         Table table = tableLoader.getTableByTableName(tableName);
         int tableID = table.getId();
@@ -148,7 +170,8 @@ public class DocumentDAOImpl implements DocumentDAO {
                 break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM " + tableName + " ns "
+        NativeQuery<Tuple> query = sess.createNativeQuery("SELECT * FROM " 
+                + tableName + " ns "
                 + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
                 + "(select DocumentID from UserPolicyCode where TablesID="
                 + tableID + " and Email in (SELECT Email from BatchUser where "
@@ -156,7 +179,7 @@ public class DocumentDAOImpl implements DocumentDAO {
                 + "(SELECT bd.DocumentID FROM BatchDocument bd "
                 + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
                 + "AssignmentTypeID=" + assignmentType + " "
-                + "AND bd.TablesID = " + tableID + ") Order By ID Desc");
+                + "AND bd.TablesID = " + tableID + ") Order By ID Desc", Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
             if (desiredStat == -1) {
@@ -179,9 +202,11 @@ public class DocumentDAOImpl implements DocumentDAO {
     @Transactional
     public String getDocumentCount(String tableName) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("select count(ID) from " + tableName);
+        NativeQuery<String> query = 
+                sess.createNativeQuery("select count(ID) from " + tableName, 
+                        String.class);
         try {
-            return (String)query.uniqueResult();
+            return query.uniqueResult();
         } catch (Exception ex) {
             throw new RuntimeException("Error in query " + query, ex);
         }
@@ -194,24 +219,36 @@ public class DocumentDAOImpl implements DocumentDAO {
             return findHearing(id);
         }
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM " + tableName + " WHERE ID = '" + id + "'");
-        query.setResultTransformer(SpecialAliasToEntityMapResultTransformer.INSTANCE);
-        return query.uniqueResult();
+        NativeQuery<Tuple> query = 
+                sess.createNativeQuery("SELECT * FROM " + tableName 
+                        + " WHERE ID = '" + id + "'", Tuple.class);
+        Tuple queryResult = query.uniqueResult();
+        return SPECIAL_TRANSFORM.apply(queryResult);
     }
 
     @Transactional
     private Object findHearing(String id) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM Transcript WHERE ID = '" + id + "'");
-        query.setResultTransformer(SpecialAliasToEntityMapResultTransformer.INSTANCE);
-        Map<String, Object> queryResult = (Map<String, Object>) query.uniqueResult();
-        NativeQuery getCommittees = sess.createNativeQuery("select AlternateName from Transcript_Committee join CommitteeAliases on committeeId=ID where transcriptId= '" + id + "'");
+        NativeQuery<Tuple> query = 
+                sess.createNativeQuery("SELECT * FROM Transcript WHERE ID = '" 
+                        + id + "'", Tuple.class);
+        List<Tuple> queryList = query.getResultList();
+        List<Map<String, Object>> queryResultList = specialTransform(queryList);
+        Map<String, Object> queryResult = queryResultList.get(0);
+        NativeQuery<String> getCommittees = 
+                sess.createNativeQuery("select AlternateName from "
+                        + "Transcript_Committee join CommitteeAliases on "
+                        + "committeeId=ID where transcriptId= '" + id + "'", String.class);
         String committees = formatCommitteesList(getCommittees.list());
         queryResult.put("Committees", committees);
-        NativeQuery getBills = sess.createNativeQuery("SELECT BillID from Transcript_BillID where TranscriptID = '" + id + "'");
+        NativeQuery<String> getBills = 
+                sess.createNativeQuery("SELECT BillID from Transcript_BillID "
+                        + "where TranscriptID = '" + id + "'", String.class);
         String bills = BillsUtil.createBillLinks(getBills.list());
         queryResult.put("Bills", bills);
-        NativeQuery getWitnesses = sess.createNativeQuery("select testimonyURL from Witness where TranscriptID='" + id + "'");
+        NativeQuery<String> getWitnesses = 
+                sess.createNativeQuery("select testimonyURL from Witness "
+                        + "where TranscriptID='" + id + "'", String.class);
         String witnesses = formatWitnesses(getWitnesses.list());
         queryResult.put("WitnessTranscriptURLs", witnesses);
         return queryResult;
@@ -238,7 +275,10 @@ public class DocumentDAOImpl implements DocumentDAO {
     public List<Map<String, String>> findDocumentCodes(String tableName, String id) {
         Table table = tableLoader.getTableByTableName(tableName);
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM UserPolicyCode WHERE documentID = '" + id + "' and TablesID = '" + table.getId() + "'");
+        NativeQuery<Tuple> query 
+                = sess.createNativeQuery("SELECT * FROM UserPolicyCode WHERE "
+                        + "documentID = '" + id + "' and TablesID = '" 
+                        + table.getId() + "'", Tuple.class);
         query.setResultTransformer(SpecialAliasToEntityMapResultTransformer.INSTANCE);
         return query.list();
     }
