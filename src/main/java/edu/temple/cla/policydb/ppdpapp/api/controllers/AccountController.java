@@ -41,6 +41,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/account")
 public class AccountController {
+    
+    private static final Logger LOGGER = Logger.getLogger(AccountController.class);
 
     @Autowired
     private UserDAO userDAO;
@@ -66,8 +69,9 @@ public class AccountController {
         try {
             Date dt;
             Timestamp ts;
-            User res = userDAO.find(values[0]);
-            if (res == null) {
+            User user = userDAO.find(values[0]);
+            if (user == null) {
+                LOGGER.error("Unrecognized user " + values[0] + "Attempted login");
                 return new ResponseEntity<>("User not recognized", HttpStatus.UNAUTHORIZED);
             }
             String uid = values[0].split("@")[0];
@@ -86,9 +90,9 @@ public class AccountController {
             String token = randString + ":" + ts.getTime();
 
             // Update user and store in database.
-            res.setAccessToken(token);
-            userDAO.update(res);
-
+            user.setAccessToken(token);
+            userDAO.update(user);
+            LOGGER.info(user.getEmail() + "Logged in");
             return new ResponseEntity<>("\"" + token + "\"", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error processing login " + e, HttpStatus.UNAUTHORIZED);
@@ -112,8 +116,10 @@ public class AccountController {
         if (user != null) {
             user.setAccessToken(null);
             userDAO.update(user);
+            LOGGER.info(user.getEmail() + "Logged out");
             return new ResponseEntity<>(email + " logged out", HttpStatus.OK);
         } else {
+            LOGGER.error("Unrecognized email: " + email + "attempted logout");
             return new ResponseEntity<>(email + " not found", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
