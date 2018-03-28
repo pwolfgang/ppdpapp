@@ -68,12 +68,12 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     @Transactional
-    public List<Map<String,Object>> findDocuments(String tableName) {
+    public List<Map<String, Object>> findDocuments(String tableName) {
         Session sess = sessionFactory.getCurrentSession();
         Integer tableID = tablesIDByName(tableName);
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("select * from " + tableName 
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("select * from " + tableName
                         + " order by ID desc", Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
@@ -90,9 +90,9 @@ public class DocumentDAOImpl implements DocumentDAO {
         Integer tableID = tablesIDByName(docType);
         int startRow = page * 25;
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("select * from " + docType 
-                        + " order by ID desc" 
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("select * from " + docType
+                        + " order by ID desc"
                         + " LIMIT " + startRow + ", 25", Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
@@ -102,10 +102,10 @@ public class DocumentDAOImpl implements DocumentDAO {
         }
     }
 
-    private List<Map<String, Object>> 
-        applyStatusToQueryResult(NativeQuery<Tuple> query, Map<String, Integer> statMap) {
+    private List<Map<String, Object>>
+            applyStatusToQueryResult(NativeQuery<Tuple> query, Map<String, Integer> statMap) {
         List<Map<String, Object>> queryList = query.stream()
-                .map(SPECIAL_TRANSFORM).collect(Collectors.toList());
+                .map(MyTupleToEntityMapTransformer.INSTANCE).collect(Collectors.toList());
         queryList.forEach(entry -> {
             String id = (String) entry.get("ID");
             Integer stat = statMap.getOrDefault(id, 0);
@@ -113,20 +113,6 @@ public class DocumentDAOImpl implements DocumentDAO {
         });
         return queryList;
     }
-        
-    private static final Function<Tuple, Map<String, Object>> SPECIAL_TRANSFORM = 
-        (tuple -> {    
-            Map<String, Object> map = new HashMap<>();
-            tuple.getElements().forEach(element -> {
-                String alias = element.getAlias();
-                Object value = tuple.get(alias);
-                if (alias.equals("ID")) {
-                    value = value.toString();
-                }
-                map.put(alias, value);
-            });
-            return map;
-        });
 
     private Map<String, Integer> getStatMap(Session sess, int tableID) {
         Table table = tableLoader.getTableById(tableID);
@@ -134,10 +120,9 @@ public class DocumentDAOImpl implements DocumentDAO {
         NativeQuery<Tuple> statusQuery = sess.createNativeQuery("select DocumentID, "
                 + "count(DocumentID) as stat from UserPolicyCode where "
                 + "TablesID=" + tableID + " group by DocumentID", Tuple.class);
-        List<Tuple> statList = statusQuery.list();
         Map<String, Integer> statMap = new HashMap<>();
-        statList.forEach(tuple -> {
-            String id = (String)tuple.get("DocumentID");
+        statusQuery.stream().forEach(tuple -> {
+            String id = (String) tuple.get("DocumentID");
             int stat = ((BigInteger) tuple.get("stat")).intValue();
             if (stat > 0 && stat < maxNumberOfCodes) {
                 stat = 1;
@@ -151,8 +136,8 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     @Transactional
-    public List<Map<String, Object>> 
-        findDocumentsNoBatch(String tableName, int assignmentType, int batch_id) {
+    public List<Map<String, Object>>
+            findDocumentsNoBatch(String tableName, int assignmentType, int batch_id) {
         Session sess = sessionFactory.getCurrentSession();
         Table table = tableLoader.getTableByTableName(tableName);
         int tableID = table.getId();
@@ -170,7 +155,7 @@ public class DocumentDAOImpl implements DocumentDAO {
                 break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery<Tuple> query = sess.createNativeQuery("SELECT * FROM " 
+        NativeQuery<Tuple> query = sess.createNativeQuery("SELECT * FROM "
                 + tableName + " ns "
                 + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
                 + "(select DocumentID from UserPolicyCode where TablesID="
@@ -202,8 +187,8 @@ public class DocumentDAOImpl implements DocumentDAO {
     @Transactional
     public String getDocumentCount(String tableName) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("select count(ID) as count from " + tableName, 
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("select count(ID) as count from " + tableName,
                         Tuple.class);
         try {
             return query.uniqueResult().get("count").toString();
@@ -219,43 +204,48 @@ public class DocumentDAOImpl implements DocumentDAO {
             return findHearing(id);
         }
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("SELECT * FROM " + tableName 
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("SELECT * FROM " + tableName
                         + " WHERE ID = '" + id + "'", Tuple.class);
-        Tuple queryResult = query.uniqueResult();
-        return SPECIAL_TRANSFORM.apply(queryResult);
+        return query.stream()
+                .map(MyTupleToEntityMapTransformer.INSTANCE)
+                .findFirst().get();
     }
 
     @Transactional
     private Object findHearing(String id) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("SELECT * FROM Transcript WHERE ID = '" 
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("SELECT * FROM Transcript WHERE ID = '"
                         + id + "'", Tuple.class);
-        Map<String, Object> queryResult = SPECIAL_TRANSFORM.apply(query.uniqueResult());
-        NativeQuery<Tuple> getCommittees = 
-                sess.createNativeQuery("select AlternateName from "
+        Map<String, Object> queryResult
+                = query.stream()
+                        .map(MyTupleToEntityMapTransformer.INSTANCE)
+                        .findFirst()
+                        .get();
+        NativeQuery<Tuple> getCommittees
+                = sess.createNativeQuery("select AlternateName from "
                         + "Transcript_Committee join CommitteeAliases on "
                         + "committeeId=ID where transcriptId= '" + id + "'", Tuple.class);
-        List<String> committeesList = 
-                getCommittees.stream()
-                              .map(tuple -> (String)tuple.get("AlternateName"))
-                              .collect(Collectors.toList());
+        List<String> committeesList
+                = getCommittees.stream()
+                        .map(tuple -> (String) tuple.get("AlternateName"))
+                        .collect(Collectors.toList());
         String committees = formatCommitteesList(committeesList);
         queryResult.put("Committees", committees);
-        NativeQuery<Tuple> getBills = 
-                sess.createNativeQuery("SELECT BillID from Transcript_BillID "
+        NativeQuery<Tuple> getBills
+                = sess.createNativeQuery("SELECT BillID from Transcript_BillID "
                         + "where TranscriptID = '" + id + "'", Tuple.class);
         List<String> billsList = getBills.stream()
-                .map(tuple -> (String)tuple.get("BillID"))
+                .map(tuple -> (String) tuple.get("BillID"))
                 .collect(Collectors.toList());
         String bills = BillsUtil.createBillLinks(billsList);
         queryResult.put("Bills", bills);
-        NativeQuery<Tuple> getWitnesses = 
-                sess.createNativeQuery("select testimonyURL from Witness "
+        NativeQuery<Tuple> getWitnesses
+                = sess.createNativeQuery("select testimonyURL from Witness "
                         + "where TranscriptID='" + id + "'", Tuple.class);
         List<String> witnessList = getWitnesses.stream()
-                .map(tuple -> (String)tuple.get("testimonyURL"))
+                .map(tuple -> (String) tuple.get("testimonyURL"))
                 .collect(Collectors.toList());
         String witnesses = formatWitnesses(witnessList);
         queryResult.put("WitnessTranscriptURLs", witnesses);
@@ -283,13 +273,13 @@ public class DocumentDAOImpl implements DocumentDAO {
     public List<Map<String, Object>> findDocumentCodes(String tableName, String id) {
         Table table = tableLoader.getTableByTableName(tableName);
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query 
+        NativeQuery<Tuple> query
                 = sess.createNativeQuery("SELECT * FROM UserPolicyCode WHERE "
-                        + "documentID = '" + id + "' and TablesID = '" 
+                        + "documentID = '" + id + "' and TablesID = '"
                         + table.getId() + "'", Tuple.class);
         return query.stream()
-             .map(SPECIAL_TRANSFORM)
-             .collect(Collectors.toList());
+                .map(MyTupleToEntityMapTransformer.INSTANCE)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -297,50 +287,38 @@ public class DocumentDAOImpl implements DocumentDAO {
     public Object findDocumentCode(String tableName, String id, String email) {
         Table table = tableLoader.getTableByTableName(tableName);
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("SELECT * FROM UserPolicyCode WHERE "
-                        + "documentID = '" + id + "' and TablesID = '" 
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("SELECT * FROM UserPolicyCode WHERE "
+                        + "documentID = '" + id + "' and TablesID = '"
                         + table.getId() + "' and Email = '" + email + "'", Tuple.class);
-        return SPECIAL_TRANSFORM.apply(query.uniqueResult());
+        return query.stream()
+                .map(MyTupleToEntityMapTransformer.INSTANCE)
+                .findFirst().get();
     }
 
     @Override
     @Transactional
     public void addDocumentCode(String email, String tableName, String docid, String batchid, int codeid) {
-        //set some initial variables to make the logic below more straightforward
         Table table = tableLoader.getTableByTableName(tableName);
         int tableID = table.getId();
         int maxNumOfCodes = table.getNumCodesRequired();
         Session sess = sessionFactory.getCurrentSession();
-
-        //take the batchID
-        //count how many UserPolicyCodes there currently are for that table.
-        //if the maxCodes = numberOfCodes
-        //set the final code
-        //insert into UserPolicyCode
-        //endIf
-        //if there are too many codes
-        //throw exception
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("SELECT Code FROM UserPolicyCode WHERE "
-                        + "DocumentID = '" + docid + "' AND TablesID = " 
-                        + tableID + " AND Email <> '" + email + "'", Tuple.class);
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("SELECT Code FROM UserPolicyCode WHERE "
+                        + "DocumentID = '" + docid + "' AND TablesID = "
+                        + tableID + " AND Email <> '" + email + "' and not isNull(Code)",
+                         Tuple.class);
         List<Integer> userPolicyCodes = query.stream()
-                .map(tuple -> (Integer)tuple.get("Code"))
+                .map(tuple -> (Integer) tuple.get("Code"))
                 .collect(Collectors.toList());
-        Integer matches = 1; //because the codeid always matches itsself
-        if (userPolicyCodes.size() == maxNumOfCodes) { //if there is already 
-            //the max value of userPolicyCodes in the database, this must be a tiebreak.
-            //insert into UserPolicyCode
+        Integer matches = 1;
+        if (userPolicyCodes.size() == maxNumOfCodes) { // This is a tiebreak
             insertUserPolicyCode(email, tableName, docid, batchid, codeid);
-            //set the final code
             updateDocumentFinalCode(tableName, docid, batchid, codeid);
-        } else if (userPolicyCodes.size() < maxNumOfCodes) { 
-            // enter this logic-block if the size of less than our maxNumOfCodes
-            for (int i = 0; i < userPolicyCodes.size(); i++) { // keep looping while i is less than the size
-                if (userPolicyCodes.get(i) == codeid) { // we are comparing to the codeid submitted by the user
+        } else if (userPolicyCodes.size() < maxNumOfCodes) {
+            for (int i = 0; i < userPolicyCodes.size(); i++) {
+                if (userPolicyCodes.get(i) == codeid) {
                     matches++;
-                    // if we have reached the number of matches needed, exit the loop.
                     if (matches == maxNumOfCodes) {
                         break;
                     }
@@ -361,7 +339,7 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     @Transactional
-    public List<Map<String,Object>> findDocumentsNoCodes(String tableName, int batchid, String email) {
+    public List<Map<String, Object>> findDocumentsNoCodes(String tableName, int batchid, String email) {
         Session sess = sessionFactory.getCurrentSession();
         Table table = tableLoader.getTableByTableName(tableName);
         String codingColumnsList = table.getCodingColumnsList();
@@ -374,27 +352,31 @@ public class DocumentDAOImpl implements DocumentDAO {
                 + "BatchDocument.DocumentID=" + tableName + ".ID "
                 + "where (BatchDocument.BatchId=" + batchid + ") "
                 + "and (Email='" + email + "' or isNull(Email))", Tuple.class);
-        
-        return query.stream().map(SPECIAL_TRANSFORM).collect(Collectors.toList());
+
+        return query.stream()
+                .map(MyTupleToEntityMapTransformer.INSTANCE)
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public List<Map<String,Object>> findDocumentsTieBreak(String tableName, int batchid, String email) {
+    public List<Map<String, Object>> findDocumentsTieBreak(String tableName, int batchid, String email) {
         Session sess = sessionFactory.getCurrentSession();
         Table table = tableLoader.getTableByTableName(tableName);
         int tableId = table.getId();
         String codingColumnsList = table.getCodingColumnsList();
         String codeColumn = codeColumnByName(tableName);
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("select " + codingColumnsList + ", "
-                + codeColumn + " as UserCode from BatchDocument "
-                + "join " + tableName + " on "
-                + "BatchDocument.DocumentID=" + tableName + ".ID "
-                + "where (BatchDocument.BatchId=" + batchid + ") "
-                + "order by BatchDocument.DocumentID", Tuple.class);
-        List<Map<String, Object>> documentsList = 
-                query.stream().map(SPECIAL_TRANSFORM).collect(Collectors.toList());
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("select " + codingColumnsList + ", "
+                        + codeColumn + " as UserCode from BatchDocument "
+                        + "join " + tableName + " on "
+                        + "BatchDocument.DocumentID=" + tableName + ".ID "
+                        + "where (BatchDocument.BatchId=" + batchid + ") "
+                        + "order by BatchDocument.DocumentID", Tuple.class);
+        List<Map<String, Object>> documentsList
+                = query.stream()
+                        .map(MyTupleToEntityMapTransformer.INSTANCE)
+                        .collect(Collectors.toList());
         NativeQuery<Tuple> query2 = sess.createNativeQuery("select BatchDocument.DocumentID, "
                 + "Code from BatchDocument join UserPolicyCode on "
                 + "BatchDocument.TablesID=UserPolicyCode.TablesID and "
@@ -402,8 +384,10 @@ public class DocumentDAOImpl implements DocumentDAO {
                 + "BatchDocument.TablesID=" + tableId + " and "
                 + "BatchDocument.BatchId=" + batchid + " and "
                 + "UserPolicyCode.Email<>'" + email + "'", Tuple.class);
-        List<Map<String, Object>> codeList = 
-                query2.stream().map(SPECIAL_TRANSFORM).collect(Collectors.toList());
+        List<Map<String, Object>> codeList
+                = query2.stream()
+                        .map(MyTupleToEntityMapTransformer.INSTANCE)
+                        .collect(Collectors.toList());
         Map<String, Map<String, Object>> resultMap = new HashMap<>();
         documentsList.forEach(row -> {
             resultMap.put((String) row.get("ID"), row);
@@ -417,8 +401,9 @@ public class DocumentDAOImpl implements DocumentDAO {
             }
             row.put("Codes", (Object) codes);
         });
-        List<Map<String,Object>> result = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<>();
         resultMap.forEach((k, v) -> {
+            @SuppressWarnings("unchecked")
             List<Integer> codes = (List<Integer>) v.get("Codes");
             for (int i = 0; i < codes.size(); i++) {
                 String key = String.format("Code%d", i + 1);
@@ -476,9 +461,9 @@ public class DocumentDAOImpl implements DocumentDAO {
         Session sess = sessionFactory.getCurrentSession();
         StringJoiner columns = new StringJoiner(", ", "(", ")");
         StringJoiner values = new StringJoiner(", ", "(", ")");
-        NativeQuery<Tuple> findLastID = 
-                sess.createNativeQuery("SELECT max(ID) as maxID from " + tableName, Tuple.class);
-        Integer lastID = (Integer)findLastID.uniqueResult().get("maxID");
+        NativeQuery<Tuple> findLastID
+                = sess.createNativeQuery("SELECT max(ID) as maxID from " + tableName, Tuple.class);
+        Integer lastID = findLastID.uniqueResult().get("maxID", Integer.class);
         int docID = lastID + 1;
         columns.add("ID");
         values.add(String.valueOf(docID));
@@ -493,89 +478,104 @@ public class DocumentDAOImpl implements DocumentDAO {
         try {
             query.executeUpdate();
         } catch (Exception ex) {
-            throw new RuntimeException("Error executing Hibernate query " 
+            throw new RuntimeException("Error executing Hibernate query "
                     + query.getQueryString(), ex);
         }
         return docID;
     }
 
-    public void insertUserPolicyCode(String email, String tableName, String docid, String batchid, int codeid) {
+    public void insertUserPolicyCode(String email, String tableName, String docid, String newBatchId, int codeid) {
         Session sess = sessionFactory.getCurrentSession();
         Integer tableID = tablesIDByName(tableName);
+        int newBatchIdInt = 0;
         try {
-            int batchIdInt = Integer.parseInt(batchid);
+            newBatchIdInt = Integer.parseInt(newBatchId);
         } catch (NumberFormatException ex) {
-            batchid = "NULL";
+            newBatchId = "NULL";
         }
-        NativeQuery query = 
-                sess.createNativeQuery("INSERT INTO UserPolicyCode "
-                        + "(Email, DocumentID ,TablesID, BatchID, Code)"
-                        + " VALUES ('" + email + "','" + docid + "'," 
-                        + tableID + "," + batchid + "," + codeid + ");");
-        try {
-            if (query.executeUpdate() != 1) {
-                throw new RuntimeException("Insert to UserPolicyCode Failed " + query);
+        String criteria = "(Email='" + email + "' and DocumentID='" + docid
+                + "' and TablesID=" + tableID + ")";
+        NativeQuery<Tuple> findExistingCodeForThisUser
+                = sess.createNativeQuery("SELECT BatchID FROM UserPolicyCode WHERE "
+                        + criteria, Tuple.class);
+        List<Integer> batchIds = findExistingCodeForThisUser.stream()
+                .map(tuple -> tuple.get("BatchID", Integer.class))
+                .collect(Collectors.toList());
+        if (batchIds.isEmpty()) { // Insert new entry into table
+            NativeQuery<?> query
+                    = sess.createNativeQuery("INSERT INTO UserPolicyCode "
+                            + "(Email, DocumentID ,TablesID, BatchID, Code)"
+                            + " VALUES ('" + email + "','" + docid + "',"
+                            + tableID + "," + newBatchId + "," + codeid + ");");
+            try {
+                if (query.executeUpdate() != 1) {
+                    throw new RuntimeException("Insert to UserPolicyCode Failed " + query);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Insert into UserPolicyCode Failed " + query, e);
             }
-        } catch (Exception e) {
-            Throwable cause = e.getCause();
-            if (cause == null || !cause.getMessage().startsWith("Duplicate entry")) {
-                throw new RuntimeException("Insert to UserPolicyCode Failed", e);
-            }
-            if (batchid == null || batchid.equals("NULL")) {
-                query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = " 
-                        + codeid + " WHERE (Email = '" + email 
-                        + "' and DocumentID = '" + docid 
-                        + "' and TablesID = " + tableID 
-                        + " AND isNull(BatchID))");                
-            } else {
-                query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = " 
-                        + codeid + " WHERE (Email = '" + email 
-                        + "' and DocumentID = '" + docid + "' and TablesID = " 
-                        + tableID + " AND BatchID = " + batchid + ");");
-            }
-            if (query.executeUpdate() != 1) {
-                NativeQuery<Tuple> query2 = 
-                        sess.createNativeQuery("SELECT BatchID from UserPolicyCode"
-                        + " WHERE (Email = '" + email + "' and DocumentID = '" 
-                        + docid + "' and TablesID = " + tableID, Tuple.class);
-                List<Integer> resultList = query2.stream()
-                        .map(tuple -> (Integer)tuple.get("BatchID"))
-                        .collect(Collectors.toList());
-                if (!resultList.isEmpty()) {
-                    throw new RuntimeException(email + " attempt to add a code "
-                            + "to batch " + batchid + " but aleady coded in batch " 
-                            + resultList.get(0));
-                } else {
-                    throw new RuntimeException("Update to UserPolicyCode Failed " + query);
+        } else {
+            for (Integer batchId : batchIds) {
+                if ((batchId == null && (newBatchId == null || newBatchId.equals("NULL")))
+                        || batchId == newBatchIdInt) {
+                    NativeQuery<?> query;
+                    if (newBatchId == null || newBatchId.equals("NULL")) {
+                        query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = "
+                                + codeid + " WHERE (Email = '" + email
+                                + "' and DocumentID = '" + docid
+                                + "' and TablesID = " + tableID
+                                + " AND isNull(BatchID))");
+                    } else {
+                        query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = "
+                                + codeid + " WHERE (Email = '" + email
+                                + "' and DocumentID = '" + docid 
+                                + "' and TablesID = " + tableID 
+                                + " AND BatchID = " + newBatchId + ")");
+                    }
+                    if (query.executeUpdate() != 1) {
+                        NativeQuery<Tuple> query2
+                                = sess.createNativeQuery("SELECT BatchID from UserPolicyCode"
+                                        + " WHERE (Email = '" + email + "' and DocumentID = '"
+                                        + docid + "' and TablesID = " + tableID, Tuple.class);
+                        List<Integer> resultList = query2.stream()
+                                .map(tuple -> tuple.get("BatchID", Integer.class))
+                                .collect(Collectors.toList());
+                        if (!resultList.isEmpty()) {
+                            throw new RuntimeException(email + " attempt to add a code "
+                                    + "to batch " + newBatchId + " but aleady coded in batch "
+                                    + resultList.get(0));
+                        } else {
+                            throw new RuntimeException("Update to UserPolicyCode Failed " + query);
+                        }
+                    }
                 }
             }
-
         }
     }
 
-    public void updateDocumentFinalCode(String tableName, String docid, String batchid, int codeid) {
+    public void updateDocumentFinalCode(String tableName, String docid, String newBatchId, int codeid) {
         Session sess = sessionFactory.getCurrentSession();
         Integer tableID = tablesIDByName(tableName);
         String codeName = codeColumnByName(tableName);
         //sets the document as complete.
         String dateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         try {
-            int batchIdInt = Integer.parseInt(batchid);
+            int batchIdInt = Integer.parseInt(newBatchId);
         } catch (NumberFormatException ex) {
-            batchid = "NULL";
+            newBatchId = "NULL";
         }
         NativeQuery query;
-        if ("NULL".equals(batchid)) {
-            query = sess.createNativeQuery("UPDATE BatchDocument SET DateCompleted = '" 
-                    + dateString + "' WHERE DocumentID = '" + docid 
+        if ("NULL".equals(newBatchId)) {
+            query = sess.createNativeQuery("UPDATE BatchDocument SET DateCompleted = '"
+                    + dateString + "' WHERE DocumentID = '" + docid
                     + "' AND TablesID = " + tableID + " AND isNull(BatchID)");
         } else {
-            query = sess.createNativeQuery("UPDATE BatchDocument SET DateCompleted = '" 
-                    + dateString + "' WHERE DocumentID = '" + docid 
-                    + "' AND TablesID = " + tableID + " AND BatchID = " + batchid);
+            query = sess.createNativeQuery("UPDATE BatchDocument SET DateCompleted = '"
+                    + dateString + "' WHERE DocumentID = '" + docid
+                    + "' AND TablesID = " + tableID + " AND BatchID = " + newBatchId);
         }
         query.executeUpdate();
-        query = sess.createNativeQuery("UPDATE " + tableName + " SET " + codeName 
+        query = sess.createNativeQuery("UPDATE " + tableName + " SET " + codeName
                 + " = " + codeid + " WHERE ID = '" + docid + "'");
         query.executeUpdate();
 
@@ -610,13 +610,13 @@ public class DocumentDAOImpl implements DocumentDAO {
     @Transactional
     public List<String> verifyUser(int batchid, String email) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("select UserPolicyCode.documentID as id from BatchDocument "
-                + "join UserPolicyCode on BatchDocument.DocumentID=UserPolicyCode.DocumentID "
-                + "and BatchDocument.TablesID=UserPolicyCode.TablesID "
-                + "where Email='" + email + "' and BatchDocument.BatchID=" + batchid, Tuple.class);
+        NativeQuery<Tuple> query
+                = sess.createNativeQuery("select UserPolicyCode.documentID as id from BatchDocument "
+                        + "join UserPolicyCode on BatchDocument.DocumentID=UserPolicyCode.DocumentID "
+                        + "and BatchDocument.TablesID=UserPolicyCode.TablesID "
+                        + "where Email='" + email + "' and BatchDocument.BatchID=" + batchid, Tuple.class);
         return query.stream()
-                .map(tuple -> (String)tuple.get("id"))
+                .map(tuple -> tuple.get("id", String.class))
                 .collect(Collectors.toList());
     }
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -31,53 +31,27 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.daos;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.transform.AliasToEntityMapResultTransformer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 import javax.persistence.Tuple;
-import org.hibernate.query.NativeQuery;
 
-public class TablesDAOImpl implements TablesDAO {
-
-    @Autowired
-    private final SessionFactory sessionFactory;
-
-    public TablesDAOImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
-    @Override
-    @Transactional
-    public Object findByID(int id) {
-        Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<Tuple> query = 
-                sess.createNativeQuery("SELECT * FROM Tables WHERE ID = " + id, 
-                        Tuple.class);
-        return query.stream()
-                .map(MyTupleToEntityMapTransformer.INSTANCE)
-                .findFirst().get();
-    }
-
-    @Override
-    @Transactional
-    public Object findByName(String tableTitle) {
-        Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM Tables WHERE TableName = '" + tableTitle + "'");
-        query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
-        return query.uniqueResult();
-    }
-
-    @Override
-    @Transactional
-    public List<Object> findTables() {
-        Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM Tables");
-        query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
-        return query.list();
-    }
-
+/**
+ *
+ * @author Paul
+ */
+public class MyTupleToEntityMapTransformer {   
+    public static final Function<Tuple, Map<String, Object>> INSTANCE =
+            (tuple -> {
+                Map<String, Object> map = new HashMap<>();
+                tuple.getElements().forEach(element -> {
+                    String key = element.getAlias();
+                    Object value = tuple.get(element);
+                    if (key.equals("ID")) {
+                            value = value.toString();
+                    }
+                    map.put(key, value);
+                });
+                return map;
+            });   
 }
