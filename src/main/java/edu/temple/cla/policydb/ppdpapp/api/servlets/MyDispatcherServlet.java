@@ -39,6 +39,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
+import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -56,6 +57,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @author Paul
  */
 @Component
+@SuppressWarnings("serial")
 public class MyDispatcherServlet extends DispatcherServlet {
 
     private final ApplicationContext servletContext;
@@ -91,23 +93,16 @@ public class MyDispatcherServlet extends DispatcherServlet {
             newParameterMap.put("user", new String[]{user.toJson()});
             HttpServletRequest newReq = new ModifiedRequest(req, newParameterMap);
             super.service(newReq, res);
+        } catch (AuthenticationException ex) {
+            LOGGER.info(ex.getMessage());
+            HttpServletResponse httpResponse = (HttpServletResponse) res;
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);            
         } catch (Exception e) {
             LOGGER.error("Error processing token", e);
             HttpServletResponse httpResponse = (HttpServletResponse) res;
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
         
-    }
-    
-    private String mapToString(Map<String, String[]> map) {
-        StringBuilder stb = new StringBuilder();
-        map.forEach((k, v) -> {
-            stb.append(k)
-                    .append(" -> ")
-                    .append(arrayToString(v))
-                    .append("\n");
-        });
-        return stb.toString();
     }
     
     StringJoiner arrayToString(String[] v) {
