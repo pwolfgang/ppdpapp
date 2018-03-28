@@ -70,11 +70,11 @@ public class Account {
 
     public User doAuthentication(String token) throws AuthenticationException {
         if (isAccessTokenExpired(token)) {
-            throw new AuthenticationException();
+            throw new AuthenticationException("Token Expired");
         }
         User user = userDAO.findByToken(token);
         if (user == null) {
-            throw new AuthenticationException();
+            throw new AuthenticationException("User not logged in");
         }
         return user;
     }

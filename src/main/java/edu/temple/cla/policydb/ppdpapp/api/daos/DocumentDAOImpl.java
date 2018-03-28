@@ -270,7 +270,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         //if there are too many codes
         //throw exception
         NativeQuery query = sess.createNativeQuery("SELECT Code FROM UserPolicyCode WHERE DocumentID = '"
-                + docid + "' AND TablesID = " + tableID + " AND Email <> '" + email + "'");
+                + docid + "' AND TablesID = " + tableID + " AND Email <> '" + email + "' and not isNull(Code)");
         List<Integer> userPolicyCodes = query.list();
         Integer matches = 1; //because the codeid always matches itsself
         if (userPolicyCodes.size() == maxNumOfCodes) { //if there is already the max value of userPolicyCodes in the database, this must be a tiebreak.

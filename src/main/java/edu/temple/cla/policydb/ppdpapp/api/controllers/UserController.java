@@ -46,8 +46,6 @@ public class UserController {
     
     @Autowired
     private UserDAO userDAO;
-    @Autowired
-    private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getUsers(@RequestParam(value = "user") User user) {
