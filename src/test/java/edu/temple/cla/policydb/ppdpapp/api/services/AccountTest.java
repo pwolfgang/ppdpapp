@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -31,50 +31,26 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.services;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
-import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import java.util.Base64;
-import java.util.Date;
-import javax.security.sasl.AuthenticationException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-@Service
-public class Account {
-
-    @Autowired
-    private UserDAO userDAO;
-
-    public String[] parseAuthHeader(String header) {
-        String base64Credentials = header.substring("Basic".length()).trim();
-        String credentials = new String(Base64.getDecoder().decode(base64Credentials.getBytes()));
-        return credentials.split(":", 2);
+/**
+ *
+ * @author Paul
+ */
+public class AccountTest {
+    
+    public AccountTest() {
     }
 
-    public boolean isAccessTokenExpired(String token) {
-        // simply extracting the timestamp from the token string and passing it as a date to the overloaded method.
-        try {
-            String[] values = token.split(":", 2);
-            long tokenTime = Long.parseLong(values[1]);
-            Date dt = new Date(tokenTime);
-            Date today = new Date();
-            return today.after(dt);
-            //return false;
-        } catch (Exception e) {
-            return true; // change back to true after done debugging...
-        }
+    @Test
+    public void testParseAuthHeader() {
+        System.out.println("parseAuthHeader");
+        String header = "Basic cGF1bEB0ZW1wbGUuZWR1OjEyMw==";
+        Account instance = new Account();
+        String[] expResult = new String[]{"paul@temple.edu", "123"};
+        String[] result = instance.parseAuthHeader(header);
+        assertArrayEquals(expResult, result);
     }
-
-    public User doAuthentication(String token) throws AuthenticationException {
-        if (isAccessTokenExpired(token)) {
-            throw new AuthenticationException("Token Expired");
-        }
-        User user = userDAO.findByToken(token);
-        if (user == null) {
-            throw new AuthenticationException("User not logged in");
-        }
-        return user;
-    }
+    
 }
