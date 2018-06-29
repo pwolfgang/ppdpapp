@@ -35,7 +35,8 @@ acct.config(['$routeProvider', function ($routeProvider) {
         });
         
         $routeProvider.when('/assignments/:batch_id/cluster_resolution/${tableName}', {
-           tamplateUrl: 'app/documents/${document}/${document}_cluster_resolver.html',
+           templateUrl: 'app/documents/${document}/${document}_cluster_resolver.html',
+           caseInsensitiveMatch: true,
            controller: '${document}ClusterResolutionCtrl',
            resolve: {
                authenticated: function (authFactory) {

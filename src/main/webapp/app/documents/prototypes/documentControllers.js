@@ -325,7 +325,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 };
         }])
         .controller('${document}ClusterResolutionCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, batchesAPI) {
-        $scope.loaded = false;
+                $scope.loaded = false;
                 $scope.requestFailed = false;
                 $scope.gridOptions = {};
                 // the reason all results are returned is because the typeahead expects functions to return a new result
@@ -337,6 +337,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         }
                 };
                 $scope.reloadBatchDocs = function () {
+                    console.log("reloadBatchDocs called");
                 $scope.loaded = false;
                         $scope.requestFailed = false;
                         ${document}API.clusterResolution(authInfo.token, $routeParams.batch_id)

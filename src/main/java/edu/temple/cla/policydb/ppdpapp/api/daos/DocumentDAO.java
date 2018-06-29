@@ -67,6 +67,8 @@ public interface DocumentDAO {
     public List<Map<String,Object>> findDocumentsNoCodes(String tableName, int batchid, String email);
 
     public List<Map<String,Object>> findDocumentsTieBreak(String tableName, int batchid, String email);
+    
+    public List<Map<String, Object>> findDocumentsClusters(String tableName, int batchid, String email);
 
     public void updateDocument(String tableName, Map<String, Object> docObj);
 

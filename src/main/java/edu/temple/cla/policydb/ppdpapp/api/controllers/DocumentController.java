@@ -155,6 +155,14 @@ public class DocumentController {
         return new ResponseEntity<>(documentDAO.findDocumentsTieBreak(tableName, 
                 batchid, user.getEmail()), HttpStatus.OK);
     }
+    
+    @RequestMapping(method = RequestMethod.GET,
+            value = "/{tableName}/batch/{batchid}/clusters")
+    public ResponseEntity<?> getDocumentClusters(@PathVariable String tableName,
+            @PathVariable int batchid, @RequestParam(value = "User") User user) {
+        return new ResponseEntity<>(documentDAO.findDocumentsClusters(tableName,
+                batchid, user.getEmail()), HttpStatus.OK);
+    }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{tableName}/upload")
     public ResponseEntity<?> uploadFile(

@@ -34,11 +34,11 @@ package edu.temple.cla.policydb.ppdpapp.api.daos;
 import edu.temple.cia.policydb.ppdpapp.util.BillsUtil;
 import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
+import edu.temple.cla.papolicy.wolfgang.resolveclusters.DisplayClustersInTable;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import static java.util.Collections.emptyMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
 
@@ -307,7 +307,7 @@ public class DocumentDAOImpl implements DocumentDAO {
                 = sess.createNativeQuery("SELECT Code FROM UserPolicyCode WHERE "
                         + "DocumentID = '" + docid + "' AND TablesID = "
                         + tableID + " AND Email <> '" + email + "' and not isNull(Code)",
-                         Tuple.class);
+                        Tuple.class);
         List<Integer> userPolicyCodes = query.stream()
                 .map(tuple -> (Integer) tuple.get("Code"))
                 .collect(Collectors.toList());
@@ -411,6 +411,27 @@ public class DocumentDAOImpl implements DocumentDAO {
             }
             result.add(v);
         });
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public List<Map<String, Object>> findDocumentsClusters(String tableName, int batchid, String email) {
+        Session sess = sessionFactory.getCurrentSession();
+        Table table = tableLoader.getTableByTableName(tableName);
+        String textColumn = table.getTextColumn();
+        String linkColumn = table.getLinkColumn();
+        String codeColumn = table.getCodeColumn();
+        String selectQuery = "select " + tableName + ".ID, " + textColumn 
+                + ", " + linkColumn + ", " + codeColumn + ", ClusterId from "
+                + tableName + " where ClusterId in (select ClusterId from " 
+                + tableName + "join BatchDocument on ID=DocumentID and BatchID="
+                + batchid + ") order by ClusterId, ID desc";
+        NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
+        List<Map<String, Object>> result = query.stream()
+             .map(MyTupleToEntityMapTransformer.INSTANCE)
+             .map(DisplayClustersInTable::processClusters)
+                .collect(Collectors.toList());
         return result;
     }
 
@@ -528,8 +549,8 @@ public class DocumentDAOImpl implements DocumentDAO {
                     } else {
                         query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = "
                                 + codeid + " WHERE (Email = '" + email
-                                + "' and DocumentID = '" + docid 
-                                + "' and TablesID = " + tableID 
+                                + "' and DocumentID = '" + docid
+                                + "' and TablesID = " + tableID
                                 + " AND BatchID = " + newBatchId + ")");
                     }
                     if (query.executeUpdate() != 1) {

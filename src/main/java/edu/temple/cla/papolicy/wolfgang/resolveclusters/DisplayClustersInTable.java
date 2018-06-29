@@ -2,10 +2,15 @@ package edu.temple.cla.papolicy.wolfgang.resolveclusters;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import org.incava.util.diff.Diff;
 import org.incava.util.diff.Difference;
 
 public class DisplayClustersInTable {
+    
+    public static Map<String, Object> processClusters(Map<String, Object> row) {
+        return row;
+    }
 
     public static void processCluster(List<String[]> cluster, PrintWriter out) {
         if (cluster.isEmpty()) {
