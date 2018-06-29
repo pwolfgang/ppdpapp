@@ -114,8 +114,6 @@ public class Application {
         LocalSessionFactoryBuilder sessionBuilder = new LocalSessionFactoryBuilder(dataSource);
         sessionBuilder.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         sessionBuilder.scanPackages("edu.temple.cla.policydb.ppdpapp.api.models");
-        sessionBuilder.addAnnotatedClass(edu.temple.cla.policydb.uploadbillsdata.CommitteeAliases.class);
-        sessionBuilder.addAnnotatedClass(edu.temple.cla.policydb.billshibernatedao.Bill.class);
         return sessionBuilder.buildSessionFactory();
     }
 
@@ -183,8 +181,8 @@ public class Application {
     
     @Autowired
     @Bean(name = "tableLoader")
-    public TableLoader getTableLoader(SessionFactory sessionFactory) {
-        return new TableLoader(sessionFactory);
+    public TableLoader getTableLoader(SessionFactory sessionFactory, DataSource dataSource) {
+        return new TableLoader(sessionFactory, dataSource);
     }
     
 }

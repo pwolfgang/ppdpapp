@@ -38,7 +38,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +53,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class BillsTable extends AbstractTable {
     
     private static final Logger LOGGER = Logger.getLogger(BillsTable.class);
+    
+    private DataSource datasource;
+    
+    @Override
+    public void setDataSource (DataSource datasource) {
+        this.datasource = datasource;
+    }
 
     @Override
     public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
@@ -70,8 +79,9 @@ public class BillsTable extends AbstractTable {
             try {
                 byte[] bytes = file.getBytes();{
                     InputStream input = new ByteArrayInputStream(bytes);
-                    ProcessSessionData processSessionData = new ProcessSessionData(getSessionFactory());
-                    Set<String> unknownCommittees = processSessionData.processFile(input);
+                    Connection conn = datasource.getConnection();
+                    ProcessSessionData processSessionData = new ProcessSessionData(conn, "Bills_Data");
+                    Set<String> unknownCommittees = processSessionData.processStream(input);
                 }
                 fileObj = fileDAO.save(fileObj);
                 return new ResponseEntity<>(fileObj, HttpStatus.OK);

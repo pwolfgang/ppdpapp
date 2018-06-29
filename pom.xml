@@ -15,8 +15,20 @@
         <jdk.version>1.8</jdk.version>
         <spring.version>5.0.4.RELEASE</spring.version>
     </properties>
+    
+    <repositories>
+        <repository>
+            <id>UploadBillsData-mvn-repo</id>
+            <url>https://raw.github.com/pwolfgang/UploadBillsData/mvn-repo</url>
+        </repository>
+    </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>edu.temple.cla.policydb</groupId>
+            <artifactId>uploadbillsdata</artifactId>
+            <version>1.0.1</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-dbcp</artifactId>

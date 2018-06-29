@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -59,13 +60,16 @@ public class TableLoader {
     private static final Logger LOGGER = Logger.getLogger(TableLoader.class);
     @Autowired
     private final SessionFactory sessionFactory;
+    @Autowired
+    private final DataSource datasource;
 
     private List<Table> tableList;
     private Map<String, Table> documentNameMap;
     private Map<String, Table> tableNameMap;
 
-    public TableLoader(SessionFactory sessionFactory) {
+    public TableLoader(SessionFactory sessionFactory, DataSource datasource) {
         this.sessionFactory = sessionFactory;
+        this.datasource = datasource;
     }
 
     /**
@@ -164,6 +168,7 @@ public class TableLoader {
         List<String> columns = getColumnNames.list();
         table.setColumns(columns);
         table.setSessionFactory(sessionFactory);
+        table.setDataSource(datasource);
         return table;
     }
     
