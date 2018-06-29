@@ -46,5 +46,12 @@ ${document}.factory('${document}API', ['$http', '$upload', 'apiRoot', function (
                 file: file
             });
         };
+        dataFactory.clusterResolution = function (token, batch_id) {
+            return $http.get(urlBase + '/batch/' + batch_id + '/clusters?token=' + token);
+        };
+        dataFactory.updateCode = function (token, id, code) {
+            return $http.post(urlBase + '/' + doc_id + '/batch/' + batch_id + '/update/code/' + code_id + '?token=' + token);
+        };
+        
         return dataFactory;
     }]);
