@@ -416,7 +416,8 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     @Transactional
-    public List<Map<String, Object>> findDocumentsClusters(String tableName, int batchid, String email) {
+    public List<Map<String, Object>> findDocumentsClusters(String tableName, 
+            int batchid, String email) {
         Session sess = sessionFactory.getCurrentSession();
         Table table = tableLoader.getTableByTableName(tableName);
         String textColumn = table.getTextColumn();
@@ -425,14 +426,18 @@ public class DocumentDAOImpl implements DocumentDAO {
         String selectQuery = "select " + tableName + ".ID, " + textColumn 
                 + ", " + linkColumn + ", " + codeColumn + ", ClusterId from "
                 + tableName + " where ClusterId in (select ClusterId from " 
-                + tableName + "join BatchDocument on ID=DocumentID and BatchID="
+                + tableName + " join BatchDocument on ID=DocumentID and BatchID="
                 + batchid + ") order by ClusterId, ID desc";
+        try {
         NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
         List<Map<String, Object>> result = query.stream()
              .map(MyTupleToEntityMapTransformer.INSTANCE)
              .map(DisplayClustersInTable::processClusters)
                 .collect(Collectors.toList());
         return result;
+        } catch (Throwable ex) {
+            throw new RuntimeException("Error in query " + selectQuery, ex);
+        }
     }
 
     @Override

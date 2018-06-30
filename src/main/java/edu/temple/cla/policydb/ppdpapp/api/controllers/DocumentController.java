@@ -159,7 +159,7 @@ public class DocumentController {
     @RequestMapping(method = RequestMethod.GET,
             value = "/{tableName}/batch/{batchid}/clusters")
     public ResponseEntity<?> getDocumentClusters(@PathVariable String tableName,
-            @PathVariable int batchid, @RequestParam(value = "User") User user) {
+            @PathVariable int batchid, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(documentDAO.findDocumentsClusters(tableName,
                 batchid, user.getEmail()), HttpStatus.OK);
     }
