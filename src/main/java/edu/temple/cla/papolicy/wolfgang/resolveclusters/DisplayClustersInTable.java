@@ -1,46 +1,41 @@
 package edu.temple.cla.papolicy.wolfgang.resolveclusters;
 
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import org.incava.util.diff.Diff;
 import org.incava.util.diff.Difference;
 
 public class DisplayClustersInTable {
-    
-    public static Map<String, Object> processClusters(Map<String, Object> row) {
+
+    private Integer currentClusterId = null;
+    private String[] list1;
+
+    public Map<String, Object> processClusters(Map<String, Object> row) {
+        Integer thisClusterId = (Integer) row.get("ClusterId");
+        String billId = (String) row.get("ID");
+        String link = Util.reformatHyperlink((String) row.get("Hyperlink"));
+        String idLink = String.format("<a href=\"%s\">%s</a>", link, billId);
+        StringBuilder rowContents = new StringBuilder();
+        if (currentClusterId == null || !currentClusterId.equals(thisClusterId)) {
+            rowContents.append("colspan=\"4\" bgcolor=\"#ffff00\">&nbsp;</td></tr><tr><td>");
+            currentClusterId = thisClusterId;
+            String text = Util.convertToXML((String) row.get("Abstract"));
+            list1 = text.split("\\s+");
+            row.put("bgColor", "#ffff00");
+            row.put("IDLink", idLink);
+            row.put("Text", text);
+            return row;
+        }
+        String text = Util.convertToXML((String) row.get("Abstract"));
+        String[] list2 = text.split("\\s+");
+        String diffString = genDiffString(list1, list2);
+        row.put("bgColor", "#ffffff");
+        row.put("IDLink", idLink);
+        row.put("Text", diffString);
         return row;
     }
 
-    public static void processCluster(List<String[]> cluster, PrintWriter out) {
-        if (cluster.isEmpty()) {
-            return;
-        }
-        String[] firstRow = cluster.get(0);
-        out.println("<tr>");
-        for (String col : firstRow) {
-            out.println("<td>" + col + "</td>");
-        }
-        out.println("</tr>");
-        String[] list1 = Util.convertToXML(firstRow[1]).split("\\s+");
-        for (int i = 1; i < cluster.size(); i++) {
-            String[] currentRow = cluster.get(i);
-            String[] list2 = Util.convertToXML(currentRow[1]).split("\\s+");
-            String diffString = genDiffString(list1, list2);
-            out.println("<tr>");
-            for (int j = 0; j < currentRow.length; j++) {
-                if (j != 1) {
-                    out.println("<td>" + currentRow[j] + "</td>");
-                } else {
-                    out.println("<td>" + diffString + "</td>");
-                }
-            }
-            out.println("</tr>");
-        }
-        out.println("<tr><td colspan=\"4\" bgcolor=\"#ffff00\">&nbsp</td></tr>");
-    }
-
-    public static String genDiffString(String[] list1, String[] list2) {
+    public String genDiffString(String[] list1, String[] list2) {
         List<Difference> diffs = new Diff<>(list1, list2).diff();
         int index = 0;
         StringBuilder stb = new StringBuilder();

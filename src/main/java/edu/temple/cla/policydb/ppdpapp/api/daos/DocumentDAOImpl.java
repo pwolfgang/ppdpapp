@@ -430,9 +430,10 @@ public class DocumentDAOImpl implements DocumentDAO {
                 + batchid + ") order by ClusterId, ID desc";
         try {
         NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
+        DisplayClustersInTable formatTable = new DisplayClustersInTable();
         List<Map<String, Object>> result = query.stream()
              .map(MyTupleToEntityMapTransformer.INSTANCE)
-             .map(DisplayClustersInTable::processClusters)
+             .map(formatTable::processClusters)
                 .collect(Collectors.toList());
         return result;
         } catch (Throwable ex) {

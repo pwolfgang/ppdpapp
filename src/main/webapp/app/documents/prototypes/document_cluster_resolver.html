@@ -16,12 +16,12 @@
             </thead>
             <tbody>
             <tr ng-repeat="row in gridOptions.data">
-                <td ng-bind-html="row.IDLink"></td>
-                <td ng-bind-html="row.Text"></td>
-                <td>{{row.Code}}</td>
-                <td><input type="text" ng-model="row.UserCode" 
-                           ng-model-options="{updateOn: 'blur'}" 
-                           ng-blur="codeDoc(row)"/></td>
+                <td style="background-color:{{row.bgColor}}" ng-bind-html="row.IDLink"></td>
+                <td style="background-color:{{row.bgColor}}" ng-bind-html="row.Text"></td>
+                <td style="background-color:{{row.bgColor}}">{{row.Code}}</td>
+                <td style="background-color:{{row.bgColor}}"><input type="text" ng-model="row.UserCode"
+                    ng-model-options="{updateOn: 'blur'}"
+                    ng-blur="codeDoc(row)"/></td>
             </tr>
             </tbody>
         </table>

@@ -19,7 +19,7 @@ public class Util {
             {">", "&gt;"},
             {"&", "&amp;"},
             {"\"", "&quot;"},
-            {"'", "&apos;"}};
+            {"'", "&#59;"}};
         for (String[] entry : xmlTransTable) {
             xmlCharMap.put(entry[0].charAt(0), entry[1]);
             xmlCodeMap.put(entry[1], entry[0].charAt(0));
