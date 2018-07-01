@@ -44,6 +44,11 @@ acct.controller('assignmentsCtrl', ['$scope', '$location', 'assignmentsAPI', 'ta
                             .success(function (res) {
                                 $location.path('/assignments/' + batchObj.batchID + '/tiebreak/' + res.TableName);
                             });
+                } else if (batchObj.assignmentTypeID ===5) {
+                    tablesAPI.find(authInfo.token, batchObj.tablesID)
+                            .success(function (res) {
+                                $location.path('/assignments/' + batchObj.batchID + '/cluster_resolution/' + res.TableName);
+                            });     
                 } else {
                     tablesAPI.find(authInfo.token, batchObj.tablesID)
                             .success(function (res) {
