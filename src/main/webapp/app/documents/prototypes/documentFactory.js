@@ -49,7 +49,7 @@ ${document}.factory('${document}API', ['$http', '$upload', 'apiRoot', function (
         dataFactory.clusterResolution = function (token, batch_id) {
             return $http.get(urlBase + '/batch/' + batch_id + '/clusters?token=' + token);
         };
-        dataFactory.updateCode = function (token, id, code) {
+        dataFactory.updateCode = function (token, doc_id, batch_id, code_id) {
             return $http.post(urlBase + '/' + doc_id + '/batch/' + batch_id + '/update/code/' + code_id + '?token=' + token);
         };
         

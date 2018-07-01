@@ -21,14 +21,16 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 ${document}API.getAll(authInfo.token)
                         .success(function (res) {
                         for (i = 0; i < res.length; i++) {
-                        if (res[i].${codeColumn} !== null) {
+                        if (res[i].${codeColumn} !== null && res[i].stat !== 4) {
                         res[i].Status = "complete";
                         } else if (res[i].stat === 0) {
                         res[i].Status = "needs first code";
                         } else if (res[i].stat === 1) {
                         res[i].Status = "needs second code";
                         } else if (res[i].stat === 2) {
-                        res[i].Status = "need tie break";
+                        res[i].Status = "needs tie break";
+                        } else if (res[i].stat === 4) {
+                        res[i].Status = "needs cluster resolution"
                         }
                         }
                         $scope.grid${documentUC}.data = res;
@@ -384,7 +386,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 };
                 $scope.codeDoc = function (row) {
                     if (typeof row.UserCode !== 'undefined') {
-                        ${document}API.updateCode(authInfo.token, row.ID, row.UserCode)
+                        ${document}API.updateCode(authInfo.token, row.ID, $routeParams.batch_id, row.UserCode)
                                 .error(function(res) {
                                     alert('Error updating database\n' + res + '\nSee log');
                                 });

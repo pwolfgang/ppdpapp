@@ -125,6 +125,27 @@ public class DocumentController {
         // Either way, this is OK.
         return new ResponseEntity<>("document code added, bud", HttpStatus.OK);
     }
+    
+    @RequestMapping(method = RequestMethod.POST, 
+            value = "/{tableName}/{docid}/batch/{batchid}/update/code/{codeid}")
+    public ResponseEntity<?> updateDocumentCodes(@PathVariable String tableName, 
+            @PathVariable String docid, 
+            @PathVariable String batchid, 
+            @PathVariable String codeid, 
+            @RequestParam(value = "user") User user) {
+        int code;
+        try {
+            code = Integer.parseInt(codeid);
+            documentDAO.updateDocumentCode(user.getEmail(), tableName, docid, batchid, code);
+        } catch (NumberFormatException nfex) {
+            if (!"null".equals(codeid)) {
+                return new ResponseEntity<>("Bad code value " + codeid, 
+                        HttpStatus.BAD_REQUEST);
+            }
+        }
+        // Either way, this is OK.
+        return new ResponseEntity<>("document code added, bud", HttpStatus.OK);
+    }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{tableName}")
     @SuppressWarnings("unchecked")

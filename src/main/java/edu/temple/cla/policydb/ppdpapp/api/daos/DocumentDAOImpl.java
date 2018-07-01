@@ -131,6 +131,16 @@ public class DocumentDAOImpl implements DocumentDAO {
             }
             statMap.put(id, stat);
         });
+        // Check for cluster (applies to Bills_Data only)
+        if (table.getDocumentName().equals("bills")) {
+            NativeQuery<Tuple> clusterQuery = 
+                    sess.createNativeQuery("Select ID, ClusterId from "
+                            + "Bills_Data where not isNull(ClusterId)", Tuple.class);
+            clusterQuery.stream().forEach(tuple -> {
+                String id = (String) tuple.get("ID");
+                statMap.put(id, 4);
+            });
+        }
         return statMap;
     }
 
@@ -152,6 +162,9 @@ public class DocumentDAOImpl implements DocumentDAO {
                 break;
             case 4:
                 desiredStat = 2;
+                break;
+            case 5:
+                desiredStat = 4;
                 break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
@@ -337,6 +350,12 @@ public class DocumentDAOImpl implements DocumentDAO {
         }
     }
 
+    @Override
+    @Transactional
+    public void updateDocumentCode(String email, String tableName, String docid, String batchid, int codeid) {
+        updateDocumentFinalCode(tableName, docid, batchid, codeid);
+    }
+    
     @Override
     @Transactional
     public List<Map<String, Object>> findDocumentsNoCodes(String tableName, int batchid, String email) {
@@ -602,8 +621,14 @@ public class DocumentDAOImpl implements DocumentDAO {
                     + "' AND TablesID = " + tableID + " AND BatchID = " + newBatchId);
         }
         query.executeUpdate();
-        query = sess.createNativeQuery("UPDATE " + tableName + " SET " + codeName
-                + " = " + codeid + " WHERE ID = '" + docid + "'");
+        String updateCodeQuery;
+        if (tableName.equals("Bills_Data")) { //Cluster only applies to bills.
+            updateCodeQuery = "UPDATE Bills_Data SET Code = " + codeid + ", ClusterId=NULL WHERE ID = '" + docid + "'";
+        } else {
+            updateCodeQuery = "UPDATE " + tableName + " SET " + codeName
+                + " = " + codeid + " WHERE ID = '" + docid + "'";
+        }
+        query = sess.createNativeQuery(updateCodeQuery);
         query.executeUpdate();
 
     }
