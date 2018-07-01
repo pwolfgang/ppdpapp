@@ -168,16 +168,26 @@ public class DocumentDAOImpl implements DocumentDAO {
                 break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
-        NativeQuery<Tuple> query = sess.createNativeQuery("SELECT * FROM "
-                + tableName + " ns "
-                + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
-                + "(select DocumentID from UserPolicyCode where TablesID="
-                + tableID + " and Email in (SELECT Email from BatchUser where "
-                + "BatchID=" + batch_id + ")) AND ns.ID NOT IN "
+        String selectQuery;
+        if (desiredStat != 4) {
+            selectQuery = "SELECT * FROM " + tableName + " ns "
+                 + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
+                 + "(select DocumentID from UserPolicyCode where TablesID="
+                 + tableID + " and Email in (SELECT Email from BatchUser where "
+                 + "BatchID=" + batch_id + ")) AND ns.ID NOT IN "
+                 + "(SELECT bd.DocumentID FROM BatchDocument bd "
+                 + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
+                 + "AssignmentTypeID=" + assignmentType + " "
+                 + "AND bd.TablesID = " + tableID + ") Order By ID Desc";
+        } else {
+            selectQuery = "SELECT * FROM " + tableName + " ns WHERE NOT "
+                + "ISNULL(ClusterId) AND ns.ID NOT IN "
                 + "(SELECT bd.DocumentID FROM BatchDocument bd "
                 + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
                 + "AssignmentTypeID=" + assignmentType + " "
-                + "AND bd.TablesID = " + tableID + ") Order By ID Desc", Tuple.class);
+                + "AND bd.TablesID = " + tableID + ") Order By ID Desc";
+        }
+        NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
             if (desiredStat == -1) {
@@ -195,7 +205,7 @@ public class DocumentDAOImpl implements DocumentDAO {
             throw new RuntimeException("Error in query " + sqlQuery, ex);
         }
     }
-
+            
     @Override
     @Transactional
     public String getDocumentCount(String tableName) {

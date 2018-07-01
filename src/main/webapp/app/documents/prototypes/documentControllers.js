@@ -86,7 +86,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 ${document}API.noBatch(authInfo.token, assignment_type, batch_id)
                                 .success(function (res) {
                                 for (i = 0; i < res.length; i++) {
-                                if (res[i].Code !== null) {
+                                if (res[i].Code !== null  && res[i].stat !== 4) {
                                 res[i].Status = "complete";
                                 } else if (res[i].stat === 0) {
                                 res[i].Status = "needs first code";
@@ -94,6 +94,8 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 res[i].Status = "needs second code";
                                 } else if (res[i].stat === 2) {
                                 res[i].Status = "need tie break";
+                                } else if (res[i].stat === 4) {
+                                res[i].Status = "needs cluster resolution"
                                 }
                                 }
                                 $scope.grid${documentUC}.data = res;
