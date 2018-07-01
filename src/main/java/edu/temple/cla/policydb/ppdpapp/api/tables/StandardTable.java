@@ -31,10 +31,53 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
+import edu.temple.cla.policydb.ppdpapp.api.models.File;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
 /**
  *
  * @author Paul Wolfgang
  */
 public class StandardTable extends AbstractTable {
+    
+    @Override
+    public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        java.io.File baseDir = new java.io.File("/var/ppdp/files");
+        java.io.File javaFile = new java.io.File(baseDir, fileName);
+        File fileObj = new File();
+        try {
+            URL fileURL = javaFile.toURI().toURL();
+            fileObj.setFileURL(fileURL.toString());
+        } catch (MalformedURLException ex) {
+            // cannot happen
+        }
+        fileObj.setContentType(file.getContentType());
+
+        if (!file.isEmpty()) {
+            try {
+                byte[] bytes = file.getBytes();
+                try (BufferedOutputStream stream = 
+                        new BufferedOutputStream(new FileOutputStream(javaFile))) {
+                    stream.write(bytes);
+                }
+                fileObj = fileDAO.save(fileObj);
+                return new ResponseEntity<>(fileObj, HttpStatus.OK);
+            } catch (Exception e) {
+                return new ResponseEntity<>(e.toString(), HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
+        }
+
+    }
     
 }

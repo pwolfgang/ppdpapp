@@ -35,9 +35,10 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 $scope.loaded = true;
                                 $scope.requestFailed = false;
                         })
-                        .error(function () {
-                        $scope.loaded = false;
-                                $scope.requestFailed = true;
+                        .error(function (res) {
+                            $scope.errMsg = res
+                            $scope.loaded = false;
+                            $scope.requestFailed = true;
                         });
                 };
                 $scope.reload${documentUC}();
@@ -97,9 +98,10 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                         $scope.loaded = true;
                                         $scope.requestFailed = false;
                                 })
-                                .error(function () {
-                                $scope.loaded = false;
-                                        $scope.requestFailed = true;
+                                .error(function (res) {
+                                    $scope.errMsg = res;
+                                    $scope.loaded = false;
+                                    $scope.requestFailed = true;
                                 });
                         });
                 };
@@ -112,9 +114,10 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 $scope.loaded = true;
                                 $scope.requestFailed = false;
                         })
-                        .error(function () {
-                        $scope.loaded = false;
-                                $scope.requestFailed = true;
+                        .error(function (res) {
+                            $scope.errMsg = res;
+                            $scope.loaded = false;
+                            $scope.requestFailed = true;
                         });
                 };
                 var batch_id = $routeParams.batch_id;
@@ -127,9 +130,10 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         $scope.loaded = true;
                         $scope.requestFailed = false;
                 })
-                .error(function () {
-                $scope.loaded = false;
-                        $scope.requestFailed = true;
+                .error(function (res) {
+                    $scope.errMsg = res;
+                    $scope.loaded = false;
+                    $scope.requestFailed = true;
                 });
         } else {
         switch ($routeParams.action) {
@@ -179,23 +183,17 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 });
                 };
         }])
-        .controller('${document}CodeCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'codesAPI', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, codesAPI, batchesAPI) {
+        .controller('${document}CodeCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, batchesAPI) {
         $scope.loaded = false;
                 $scope.requestFailed = false;
                 $scope.gridOptions = {};
                 // the reason all results are returned is because the typeahead expects functions to return a new result
                 // that reflects the current value. this method returns all the codes NO MATTER WHAT
                 $scope.external = {
-                loading: false,
-                        searchCodes: function (s) {
-                        return codesAPI.search(authInfo.token, 'Newsclips', s)
-                                .then(function (res) {
-                                return res.data;
-                                });
-                        },
-                        onSelect: function ($item, $model, $label, row) {
+                    loading: false,
+                    onSelect: function ($item, $model, $label, row) {
                         row.entity.Coding = $item.Code;
-                        }
+                    }
                 };
                 $scope.reloadBatchDocs = function () {
                 $scope.loaded = false;
@@ -213,9 +211,10 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 });
                                 $scope.gridOptions.data = res;
                         })
-                        .error(function () {
-                        $scope.loaded = false;
-                                $scope.requestFailed = true;
+                        .error(function (res) {
+                            $scope.errMsg = res;
+                            $scope.loaded = false;
+                            $scope.requestFailed = true;
                         });
                 };
                 $scope.reloadBatchDocs();
@@ -251,7 +250,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 $scope.codeDoc = function (row) {
                 ${document}API.addCode(authInfo.token, row.ID, $routeParams.batch_id, row.UserCode)
                         .error(function(res) {
-                        alert('Error updating database\n' + res);
+                        alert('Error updating database\n' + res + '\nSee log');
                         });
                 };
                 $scope.viewDoc = function (rowID) {
@@ -259,7 +258,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         $location.path(route);
                 };
         }])
-        .controller('${document}TiebreakCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'codesAPI', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, codesAPI, batchesAPI) {
+        .controller('${document}TiebreakCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, batchesAPI) {
         $scope.loaded = false;
                 $scope.requestFailed = false;
                 $scope.gridOptions = {};
@@ -267,12 +266,6 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 // that reflects the current value. this method returns all the codes NO MATTER WHAT
                 $scope.external = {
                 loading: false,
-                        searchCodes: function (s) {
-                        return codesAPI.search(authInfo.token, '${document}', s)
-                                .then(function (res) {
-                                return res.data;
-                                });
-                        },
                         onSelect: function ($item, $model, $label, row) {
                         row.entity.Coding = $item.Code;
                         }
@@ -286,9 +279,10 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 $scope.loaded = true;
                                 $scope.requestFailed = false;
                         })
-                        .error(function () {
-                        $scope.loaded = false;
-                                $scope.requestFailed = true;
+                        .error(function (res) {
+                            $scope.errMst = res
+                            $scope.loaded = false;
+                            $scope.requestFailed = true;
                         });
                 };
                 $scope.reloadBatchDocs();
@@ -325,7 +319,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                     if (typeof row.UserCode !== 'undefined') {
                         ${document}API.addCode(authInfo.token, row.ID, $routeParams.batch_id, row.UserCode)
                                 .error(function(res) {
-                                    alert('Error updating database\n' + res);
+                                    alert('Error updating database\n' + res + '\nSee log');
                                 });
                     }
                 };
@@ -378,7 +372,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                                     $location.path('/assignments/' + batch_id + '/view/${tableName}');
                                                 })
                                                 .error(function (res) {
-                                                    alert('Error adding code ' + res);
+                                                    alert('Error adding code ' + res + '\nSee log');
                                                 });
                                         }
                                     })
@@ -388,7 +382,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                             }
                         })
                         .error(function (res) {
-                            alert('Error saving ${document} ' + res);
+                            alert('Error saving ${document} ' + res + '\nSee log');
                         });
                 };
                 $scope.convertBoolToInt = function (num) {
@@ -414,7 +408,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                             .error(function (err) {
                                 $scope.error = err;
                                 $scope.processing = false;
-                                alert('Error uploading file ' + err);
+                                alert('Error uploading file ' + err + '\nSee log');
                             });
                 };
         }])
@@ -440,13 +434,15 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         $scope.UserCode = res2.Code;
                         })
                         .error(function (err) {
-                        alert('Unable to get user policy code for ' + $routeParams.doc_id + '\n' + err);
+                        alert('Unable to get user policy code for ' + 
+                        $routeParams.doc_id + '\n' + err + '\nSee log');
                         });
                 }
                 ${multiValuedFiltersValueJs}
                 })
                 .error(function(err) {
-                            ('Unableto get document ' + $routeParams.doc_id + '\n' + err);
+                            ('Unableto get document ' + $routeParams.doc_id 
+                            + '\n' + err + '\nSee log');
                         });
                 $scope.processing = false;
                 ${dateFieldFunctions}
@@ -470,7 +466,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                             // OK, do nothing
                             })
                             .error(function (res) {
-                            alert('Error adding code ' + res);
+                            alert('Error adding code ' + res + '\nSee log');
                             });
                         }
                         if (typeof($routeParams.batch_id) !== 'undefined') {
@@ -480,7 +476,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         }
                         })
                         .error(function (err) {
-                        alert('Error updating document ' + err);
+                        alert('Error updating document ' + err + '\nSee log');
                                 $scope.processing = false;
                         })
                         ;
@@ -508,7 +504,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                             .error(function (err) {
                                 $scope.error = err;
                                 $scope.processing = false;
-                                alert('Error uploading file ' + err);
+                                alert('Error uploading file ' + err + '\nSee log');
                             });
                 };
         }]);

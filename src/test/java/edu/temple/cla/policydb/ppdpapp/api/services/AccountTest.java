@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,47 +29,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.models;
+package edu.temple.cla.policydb.ppdpapp.api.services;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.Column;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Newspaper entity.
  *
- * See:
- * http://docs.jboss.org/hibernate/annotations/3.5/reference/en/html/entity.html
+ * @author Paul
  */
-@Entity
-@Table(name = "Newspaper")
-public class Newspaper {
-
-    /**
-     * Annotated properties/fields.
-     */
-    @Id
-    @Column(name = "NewspaperID", nullable = false)
-    private Integer NewspaperID;
-
-    @Column(name = "Name", nullable = false)
-    private String name;
-
-    public Integer getNewspaperID() {
-        return NewspaperID;
+public class AccountTest {
+    
+    public AccountTest() {
     }
 
-    public void setNewspaperID(Integer newspaperID) {
-        NewspaperID = newspaperID;
+    @Test
+    public void testParseAuthHeader() {
+        System.out.println("parseAuthHeader");
+        String header = "Basic cGF1bEB0ZW1wbGUuZWR1OjEyMw==";
+        Account instance = new Account();
+        String[] expResult = new String[]{"paul@temple.edu", "123"};
+        String[] result = instance.parseAuthHeader(header);
+        assertArrayEquals(expResult, result);
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    
 }

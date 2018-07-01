@@ -35,18 +35,10 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.CodeDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.CodeDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.FilterDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.FilterDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewsClipTypeDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewsClipTypeDAOImpl;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewspaperDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.RoleDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.TablesDAO;
@@ -152,12 +144,6 @@ public class Application {
     }
 
     @Autowired
-    @Bean(name = "codeDao")
-    public CodeDAO getCodeDao(SessionFactory sessionFactory) {
-        return new CodeDAOImpl(sessionFactory);
-    }
-
-    @Autowired
     @Bean(name = "documentDao")
     public DocumentDAO getDocumentDao(SessionFactory sessionFactory) {
         return new DocumentDAOImpl(sessionFactory);
@@ -167,18 +153,6 @@ public class Application {
     @Bean(name = "fileDao")
     public FileDAO getFileDao(SessionFactory sessionFactory) {
         return new FileDAOImpl(sessionFactory);
-    }
-
-    @Autowired
-    @Bean(name = "filterDao")
-    public FilterDAO getFilterDao(SessionFactory sessionFactory) {
-        return new FilterDAOImpl(sessionFactory);
-    }
-
-    @Autowired
-    @Bean(name = "newspaperDao")
-    public NewspaperDAO getNewspaperDao(SessionFactory sessionFactory) {
-        return new NewspaperDAOImpl(sessionFactory);
     }
 
     @Autowired
@@ -194,27 +168,21 @@ public class Application {
     }
 
     @Autowired
-    @Bean(name = "tablesDao")
-    public TablesDAO getTablesDao(SessionFactory sessionFactory) {
-        return new TablesDAOImpl(sessionFactory);
-    }
-
-    @Autowired
-    @Bean(name = "newsClipTypeDao")
-    public NewsClipTypeDAO getNewsClipTypeDao(SessionFactory sessionFactory) {
-        return new NewsClipTypeDAOImpl(sessionFactory);
-    }
-
-    @Autowired
     @Bean(name = "assignmentTypeDao")
     public AssignmentTypeDAO getAssignmentTypeDao(SessionFactory sessionFactory) {
         return new AssignmentTypeDAOImpl(sessionFactory);
     }
     
     @Autowired
+    @Bean(name = "tablesDao")
+    public TablesDAO getTablesDao(SessionFactory sessionFactory) {
+        return new TablesDAOImpl(sessionFactory);
+    }
+    
+    @Autowired
     @Bean(name = "tableLoader")
-    public TableLoader getTableLoader(SessionFactory sessionFactory) {
-        return new TableLoader(sessionFactory);
+    public TableLoader getTableLoader(SessionFactory sessionFactory, DataSource dataSource) {
+        return new TableLoader(sessionFactory, dataSource);
     }
     
 }

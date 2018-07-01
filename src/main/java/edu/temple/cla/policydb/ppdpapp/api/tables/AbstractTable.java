@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.BinaryFilter;
 import java.util.List;
 import edu.temple.cla.policydb.ppdpapp.api.filters.Filter;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +90,7 @@ public abstract class AbstractTable implements Table {
     private List<MetaData> dateFieldMetaData;
     private Set<String> columns;
     private SessionFactory sessionFactory;
+    private DataSource datasource;
 
     /**
      * Get the ID
@@ -1150,6 +1153,11 @@ public abstract class AbstractTable implements Table {
     public ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file) {
             return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
     }
+
+    @Override
+    public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
+            return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
+    }
     
     @Override
     public void setSessionFactory(SessionFactory sessionFactory) {
@@ -1158,6 +1166,16 @@ public abstract class AbstractTable implements Table {
     
     @Override
     public SessionFactory getSessionFactory() {return sessionFactory;}
+    
+    @Override
+    public void setDataSource(DataSource datasource) {
+        this.datasource = datasource;
+    }
+    
+    @Override
+    public DataSource getDataSource(){
+        return datasource;
+    }
 
 
 }

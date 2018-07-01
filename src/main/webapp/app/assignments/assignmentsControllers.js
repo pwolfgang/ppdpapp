@@ -29,7 +29,8 @@ acct.controller('assignmentsCtrl', ['$scope', '$location', 'assignmentsAPI', 'ta
                         $scope.loaded = true;
                         $scope.requestFailed = false;
                     })
-                    .error(function () { // when no assignments, was causing an error...
+                    .error(function (res) { // when no assignments, was causing an error...
+                        $scope.errMsg = res;
                         $scope.loaded = true;
                         $scope.requestFailed = false;
                     });

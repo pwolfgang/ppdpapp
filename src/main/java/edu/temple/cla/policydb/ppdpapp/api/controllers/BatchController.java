@@ -58,16 +58,14 @@ public class BatchController {
     private DocumentDAO documentDAO;
     @Autowired
     private AssignmentTypeDAO assignmentTypeDAO;
-    @Autowired
-    private Account accountSvc;
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getBatches(@RequestParam(value = "user") User user) {
 
-        if (user.getRole().getRoleID() > 1) {
-            return new ResponseEntity<>(batchDAO.list(), HttpStatus.OK);
-        } else {
+        if ("Researcher".equals(user.getRole().getName())) {
             return new ResponseEntity<>(userDAO.findBatches(user.getEmail()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(batchDAO.list(), HttpStatus.OK);
         }
     }
 

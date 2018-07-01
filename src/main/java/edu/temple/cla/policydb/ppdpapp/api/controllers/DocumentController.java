@@ -32,10 +32,7 @@
 package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
 import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.NewsClipTypeDAO;
-import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import edu.temple.cla.policydb.ppdpapp.api.services.Account;
 import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,12 +49,6 @@ public class DocumentController {
 
     @Autowired
     DocumentDAO documentDAO;
-    @Autowired
-    private UserDAO userDAO;
-    @Autowired
-    private Account accountSvc;
-    @Autowired
-    private NewsClipTypeDAO newsClipTypeDAO;
     @Autowired
     private TableLoader tableLoader;
 
@@ -163,11 +154,6 @@ public class DocumentController {
             @PathVariable int batchid, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(documentDAO.findDocumentsTieBreak(tableName, 
                 batchid, user.getEmail()), HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/NewsClips/type")
-    public ResponseEntity<?> getNewsClipType(@RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(newsClipTypeDAO.list(), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{tableName}/upload")

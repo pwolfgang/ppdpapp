@@ -34,14 +34,16 @@ package edu.temple.cla.policydb.ppdpapp.api.daos;
 
 import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
+import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
-import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,9 @@ public class BatchDAOImpl implements BatchDAO {
 
     @Autowired
     private final SessionFactory sessionFactory;
+    
+    @Autowired
+    private TableLoader tableLoader;
 
     public BatchDAOImpl(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
@@ -81,7 +86,7 @@ public class BatchDAOImpl implements BatchDAO {
     @Transactional
     public void create(Batch batchObj) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("INSERT INTO Batches "
+        NativeQuery<?> query = sess.createNativeQuery("INSERT INTO Batches "
                 + "(FileID, TablesID, AssignmentTypeID, AssignmentDescription, "
                 + "Name, DateAdded, Creator, DateDue)"
                 + "Values('" + batchObj.getFileID() + "','" + batchObj.getTablesID() 
@@ -106,7 +111,7 @@ public class BatchDAOImpl implements BatchDAO {
 
         // manually delete the associated docs from BatchDocuments since we manually added them.
         try {
-            NativeQuery query = sess.createNativeQuery("DELETE FROM BatchDocument WHERE BatchID = " + id);
+            NativeQuery<?> query = sess.createNativeQuery("DELETE FROM BatchDocument WHERE BatchID = " + id);
             query.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -123,24 +128,38 @@ public class BatchDAOImpl implements BatchDAO {
     @Override
     @Transactional
     public List<Object[]> findDocuments(int id) {
-        Session sess = sessionFactory.getCurrentSession();
+        Session sess = sessionFactory.getCurrentSession();       
+        Integer tableId = getTableIdFromBatch(sess, id);
+        String tableName = tableLoader.getTableById(tableId).getTableName();
 
-        NativeQuery tableNameQuery = sess.createNativeQuery("SELECT TableName FROM Tables WHERE ID = (SELECT TablesID FROM Batches WHERE BatchID = " + id + ")");
-        String tableName = (String)tableNameQuery.uniqueResult();
+        NativeQuery<Tuple> query = sess.createNativeQuery("SELECT * FROM " 
+                + tableName + " AS nc LEFT JOIN BatchDocument AS bd ON "
+                        + "nc.ID = bd.DocumentID "
+                + "WHERE bd.BatchID = " + id, Tuple.class);
+        return query.stream().map(Tuple::toArray).collect(Collectors.toList());
+    }
 
-        NativeQuery query = sess.createNativeQuery("SELECT * FROM " + tableName + " AS nc "
-                + "LEFT JOIN BatchDocument AS bd ON nc.ID = bd.DocumentID "
-                + "WHERE bd.BatchID = " + id);
-        return query.getResultList();
+    public Integer getTableIdFromBatch(Session sess, int id) {
+        NativeQuery<Tuple> tableIdQuery =
+                sess.createNativeQuery("SELECT TablesID from Batches "
+                        + "WHERE BatchID=" + id, Tuple.class);
+        try { 
+            Integer tableId = tableIdQuery.stream()
+                .map(tuple -> tuple.get("TablesID", Integer.class))
+                .findFirst().get();
+            return tableId;
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Batch " + id + " not found");
+        }
     }
 
     @Override
     @Transactional
     public void addDocument(int batchID, String docID) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery query = sess.createNativeQuery("SELECT ID FROM Tables WHERE ID = (SELECT TablesID FROM Batches WHERE BatchID = " + batchID + ")");
-        String tableID = query.uniqueResult().toString();
-        query = sess.createNativeQuery("INSERT INTO BatchDocument (DocumentID, TablesID ,BatchID)"
+        Integer tableID = getTableIdFromBatch(sess, batchID);
+        NativeQuery<?> query = sess.createNativeQuery("INSERT INTO BatchDocument "
+                + "(DocumentID, TablesID ,BatchID)"
                 + "VALUES ('" + docID + "'," + tableID + "," + batchID + ");");
         query.executeUpdate();
     }
@@ -149,11 +168,11 @@ public class BatchDAOImpl implements BatchDAO {
     @Transactional
     public void deleteDocument(int batchID, String docID) {
         Session sess = sessionFactory.getCurrentSession();
-        NativeQuery tableIDQuery = sess.createNativeQuery("SELECT TablesID FROM Batches WHERE BatchID=" + batchID + ")");
-        String tableID = (String)tableIDQuery.uniqueResult();
+        Integer tableID = getTableIdFromBatch(sess, batchID);
         try {
-            NativeQuery deleteQuery = sess.createNativeQuery("DELETE FROM BatchDocument WHERE BatchID = " 
-                    + batchID + " AND TablesID = " + tableID + " AND DocumentID = '" + docID + "'"); //
+            NativeQuery<?> deleteQuery = 
+                    sess.createNativeQuery("DELETE FROM BatchDocument WHERE BatchID = " 
+                    + batchID + " AND TablesID = " + tableID + " AND DocumentID = '" + docID + "'"); 
             deleteQuery.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -165,7 +184,8 @@ public class BatchDAOImpl implements BatchDAO {
     public void deleteUser(int batchID, String email) {
         Session sess = sessionFactory.getCurrentSession();
         try {
-            NativeQuery query = sess.createNativeQuery("DELETE FROM BatchUser WHERE BatchID = " 
+            NativeQuery<?> query = 
+                    sess.createNativeQuery("DELETE FROM BatchUser WHERE BatchID = " 
                     + batchID + " AND Email = '" + email + "'");
             query.executeUpdate();
         } catch (Exception e) {

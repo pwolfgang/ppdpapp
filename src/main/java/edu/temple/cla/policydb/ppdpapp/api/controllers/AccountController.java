@@ -101,6 +101,8 @@ public class AccountController {
     
     private Object[] authorizeUser(String uid, String pw) {
         // Check for dummy accounts
+        // Note that dummy accounts must be in the Users table, so these
+        // accounts are not available on the in production.
         switch (uid) {
             case "admin":
             case "researcher":

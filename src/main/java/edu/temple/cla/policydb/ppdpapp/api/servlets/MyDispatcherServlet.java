@@ -57,6 +57,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @author Paul
  */
 @Component
+@SuppressWarnings("serial")
 public class MyDispatcherServlet extends DispatcherServlet {
 
     private final ApplicationContext servletContext;
@@ -102,17 +103,6 @@ public class MyDispatcherServlet extends DispatcherServlet {
             httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
         
-    }
-    
-    private String mapToString(Map<String, String[]> map) {
-        StringBuilder stb = new StringBuilder();
-        map.forEach((k, v) -> {
-            stb.append(k)
-                    .append(" -> ")
-                    .append(arrayToString(v))
-                    .append("\n");
-        });
-        return stb.toString();
     }
     
     StringJoiner arrayToString(String[] v) {

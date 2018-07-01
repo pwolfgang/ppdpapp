@@ -24,7 +24,7 @@ angular.module('filesControllers', ['filesFactory'])
                                 $scope.requestFailed = false;
                             })
                             .error(function (res, status) {
-                                $scope.res = res;
+                                $scope.errMsg = res;
                                 $scope.status = status;
                                 $scope.loaded = false;
                                 $scope.requestFailed = true;
@@ -83,7 +83,7 @@ angular.module('filesControllers', ['filesFactory'])
                     };
 
                     // actual file upload pointing to whatever server.
-                    filesAPI.upload(authInfo.token, file)
+                    filesAPI.upload(authInfo.token, $scope.batch_type.ID, file)
                             .progress(function (evt) {
                                 $scope.progress = parseInt(100.0 * evt.loaded / evt.total);
                             })

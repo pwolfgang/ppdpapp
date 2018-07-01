@@ -31,13 +31,14 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.Filter;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.hibernate.Session;
+import javax.sql.DataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -326,6 +327,8 @@ public interface Table {
     Map<String, String> getTemplateParameters();
     
     ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file);
+
+    ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file);
     
     void setSessionFactory(SessionFactory sessionFactory);
     
@@ -334,5 +337,9 @@ public interface Table {
      * @return
      */
     SessionFactory getSessionFactory();
+    
+    void setDataSource(DataSource datasource);
+    
+    DataSource getDataSource();
 
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,37 +29,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.controllers;
+package edu.temple.cla.policydb.ppdpapp.api.daos;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import javax.persistence.Tuple;
 
-import edu.temple.cla.policydb.ppdpapp.api.daos.FilterDAO;
-import edu.temple.cla.policydb.ppdpapp.api.models.Filter;
-import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import edu.temple.cla.policydb.ppdpapp.api.services.Account;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/filters")
-public class FilterController {
-
-    @Autowired
-    private FilterDAO FilterDAO;
-    @Autowired
-    private Account accountSvc;
-
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getFilters(@RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(FilterDAO.list(), HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/{id:.+}")
-    public ResponseEntity<?> getFilter(@PathVariable Integer id, 
-            @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(FilterDAO.find(id), HttpStatus.OK);
-    }
+/**
+ *
+ * @author Paul
+ */
+public class MyTupleToEntityMapTransformer {   
+    public static final Function<Tuple, Map<String, Object>> INSTANCE =
+            (tuple -> {
+                Map<String, Object> map = new HashMap<>();
+                tuple.getElements().forEach(element -> {
+                    String key = element.getAlias();
+                    Object value = tuple.get(element);
+                    if (key.equals("ID")) {
+                            value = value.toString();
+                    }
+                    map.put(key, value);
+                });
+                return map;
+            });   
 }

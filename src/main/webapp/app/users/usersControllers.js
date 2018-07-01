@@ -19,7 +19,8 @@ users.controller('usersCtrl', ['$scope', 'usersAPI', 'authInfo', function ($scop
                 $scope.gridOptions.data = res;
                 $scope.loaded = true;
                 $scope.requestFailed = false;
-            }).error(function () {
+            }).error(function (res) {
+                $scope.errMst = res;
                 $scope.loaded = false;
                 $scope.requestFailed = true;
             });

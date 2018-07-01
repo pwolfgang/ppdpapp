@@ -34,11 +34,10 @@ package edu.temple.cla.policydb.ppdpapp.api.services;
 
 import edu.temple.cla.policydb.ppdpapp.api.daos.UserDAO;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
-import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Date;
 import javax.security.sasl.AuthenticationException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +49,7 @@ public class Account {
 
     public String[] parseAuthHeader(String header) {
         String base64Credentials = header.substring("Basic".length()).trim();
-        String credentials = new String(Base64.decodeBase64(base64Credentials), Charset.forName("UTF-8"));
+        String credentials = new String(Base64.getDecoder().decode(base64Credentials.getBytes()));
         return credentials.split(":", 2);
     }
 

@@ -37,8 +37,8 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
 
 /**
@@ -77,7 +77,7 @@ public class TypeAheadData {
                 }
             }
         });
-        SQLQuery query = sess.createSQLQuery("select * from " + tableName);
+        NativeQuery query = sess.createNativeQuery("select * from " + tableName);
         query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE);
         List<Map<String, Object>> typeAheadDataObjects = query.list();
         StringJoiner stj = new StringJoiner(",\n", "[", "]");

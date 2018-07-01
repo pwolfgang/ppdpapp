@@ -104,8 +104,9 @@ public class LegServAgncyReports extends AbstractTable {
                     report.put("Hyperlink", url);
                     return new ResponseEntity<>(report, HttpStatus.OK);
                 } catch (Exception e) {
-                    LOGGER.error("Error Uploading File", e);
-                    return new ResponseEntity<>(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+                    LOGGER.error("Error uploading file", e);
+                    return new ResponseEntity<>("Error uploading file, see log for details", 
+                            HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             } else {
                 return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
