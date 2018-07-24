@@ -3,7 +3,7 @@ var app = angular.module('ppdpapp.v2', [
     'ui.grid', 'ui.grid.edit', 'ui.grid.cellNav', 'ui.grid.rowEdit',
     'ui.grid.resizeColumns',
     'ppdpappDirectives', 'ppdpappFactories', 'ppdpappFilters',
-    'account', 'assignments', ${tables}, 'batches', 'users', 'files'
+    'account', 'assignments', ${tables}, 'batches', 'users', 'files', 'admin'
 ]);
 
 app.config(['$routeProvider', '$provide', '$animateProvider', function ($routeProvider, $provide, $animateProvider) {
