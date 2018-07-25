@@ -423,6 +423,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         });
         codeList.forEach(codeRow -> {
             Map<String, Object> row = resultMap.getOrDefault(codeRow.get("DocumentID"), emptyMap());
+            @SuppressWarnings("unchecked")
             List<Integer> codes = (List<Integer>) row.getOrDefault("Codes", new ArrayList<>());
             Integer code = (Integer) codeRow.get("Code");
             if (code != null) {

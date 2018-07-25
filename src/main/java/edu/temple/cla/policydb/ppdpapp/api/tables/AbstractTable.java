@@ -1160,6 +1160,11 @@ public abstract class AbstractTable implements Table {
     }
     
     @Override
+    public ResponseEntity<?> publishDataset() {
+        return new ResponseEntity<>("Publishing Dataset not Supported", HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @Override
     public void setSessionFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }

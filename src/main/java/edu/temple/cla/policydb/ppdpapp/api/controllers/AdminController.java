@@ -31,10 +31,10 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
-import edu.temple.cla.policydb.ppdpapp.api.daos.AdminDAO;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
+import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
+import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,12 +52,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
     
     @Autowired
-    private AdminDAO adminDAO;
+    private TableLoader tableLoader;
 
     @RequestMapping(method = RequestMethod.PUT, value="{tableName}")
     public ResponseEntity<?> publish(@PathVariable String tableName, 
             @RequestParam(value = "user") User user) {
-        return new ResponseEntity<>(adminDAO.doPublish(tableName), HttpStatus.OK);
+        Table table = tableLoader.getTableByTableName(tableName);
+        return table.publishDataset();
     }
 }
 
