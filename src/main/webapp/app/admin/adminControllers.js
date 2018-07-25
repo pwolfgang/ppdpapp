@@ -32,32 +32,33 @@
 var admin = angular.module('adminControllers', ['adminFactory']);
 
 
-admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'authInfo', function ($scope, $location, adminAPI, authInfo) {
-        $scope.role_dd_status = false;
-        $scope.role_type = null;
+admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'tablesAPI', 'authInfo', 
+    function ($scope, $location, adminAPI, tablesAPI, authInfo) {
+                $scope.loaded = false;
+                $scope.requestFailed = false;
 
-        adminAPI.getAllRoles(authInfo.token).success(function (res) {
-            $scope.role_dd_items = res;
-        });
-        $scope.setRoleType = function (roleObj) {
-            $scope.role_type = roleObj;
-        };
-
-        $scope.create = function () {
-            $scope.processing = true;
-            var userObj = {};
-            userObj.email = $scope.accessnet + '@temple.edu';
-            userObj.role = $scope.role_type;
-            userObj.firstName = $scope.fname;
-            userObj.lastName = $scope.lname;
-            userObj.isActive = true;
-            userObj.dateAdded = new Date();
-
-            adminAPI.create(authInfo.token, userObj).success(function (res) {
-                $scope.processing = false;
-                $location.path('/admin/');
-            });
-        };
+                // call tablesAPI to get table names.
+                tablesAPI.getAll(authInfo.token)
+                        .success(function (res) {
+                            $scope.dataset_type_dd_items = res;
+                            $scope.loaded = true;
+                            $scope.requestFailed = false;
+                        });
+                $scope.setDatasetType = function (tableObj) {
+                    $scope.dataset_type = tableObj;
+                };
+                
+                $scope.doUpload = function() {
+                    $scope.pricessing = true;
+                    adminAPI.upload(authInfo.token, $scope.dataset_type.TableName)
+                            .success(function (res) {
+                                $scope.processing = false;
+                            })
+                            .error(function (err) {
+                                $scope.error = err;
+                                $scope.processing = false;                             
+                            });
+                };
     }]);
 
 

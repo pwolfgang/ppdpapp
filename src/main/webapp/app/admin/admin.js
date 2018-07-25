@@ -33,7 +33,7 @@ var admin = angular.module('admin', ['adminControllers']);
 
 admin.config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/admin', {
-            templateUrl: 'app/users/admin.html',
+            templateUrl: 'app/admin/admin.html',
             controller: 'adminCtrl',
             resolve: {
                 authenticated: function (authFactory) {
