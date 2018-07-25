@@ -32,10 +32,11 @@
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
+import static java.util.stream.Collectors.toList;
 import javax.persistence.Tuple;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -115,6 +116,48 @@ public class LegServAgncyReports extends AbstractTable {
             LOGGER.error("Error Uploading File", ex);
             return new ResponseEntity<>(ex.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    
+    /**
+     * Method to publish the dataset. This method will determine the new entries
+     * in the PAPolicy_Copy database and load them into the PAPolicy database.
+     * It will also copy the corresponding Legislative Service Agency reports.
+     * @return ResponseEntity indicating success or failure.
+     */
+    @Override
+    public ResponseEntity<?> publishDataset() {
+        try (Session sess = getSessionFactory().openSession()) {
+            String dropNewEntriesTable = "drop table if exists NewLSAReports";
+            String createNewEntriesTable = "create table NewLSAReports "
+                    + "select PAPolicy_Copy.LegServiceAgencyReports.ID,"
+                    + " PAPolicy_Copy.LegServiceAgencyReports.Hyperlink, "
+                    + "PAPolicy_Copy.LegServiceAgencyReports.FinalCode "
+                    + "from PAPolicy_Copy.LegServiceAgencyReports left join "
+                    + "PAPolicy.LegServiceAgencyReports on "
+                    + "PAPolicy_Copy.LegServiceAgencyReports.ID=PAPolicy.LegServiceAgencyReports.ID "
+                    + "where isNull(PAPolicy.LegServiceAgencyReports.ID) "
+                    + "and not isNull(PAPolicy_Copy.LegServiceAgencyReports.FinalCode)";
+            String listNewReports = "select HyperLink from NewLSAReports where not isNull(Hyperlink)";
+            Transaction tx = sess.beginTransaction();
+            sess.createNativeQuery(dropNewEntriesTable).executeUpdate();
+            sess.createNativeQuery(createNewEntriesTable).executeUpdate();
+            String findNewDocIDs = "select HyperLink from NewLSAReports where not isNull(Hyperlink)";
+            List<String> hyperLinkList = sess.createNativeQuery(findNewDocIDs, Tuple.class)
+                    .stream()
+                    .map(t -> {
+                        String[] parts = ((String)t.get("HyperLink")).split("=");
+                        return parts[1].substring(0, (parts[1].length())-1);
+                    })
+                    .collect(toList());
+            sess.createNativeQuery("drop table if exists NewDocIds").executeUpdate();
+            String createNewDocIds = "create table NewDocIds (docId varchar(50))";
+            sess.createNativeQuery(createNewDocIds).executeUpdate(); 
+            StringJoiner sj = new StringJoiner(", ");
+            hyperLinkList.forEach(s -> sj.add(String.format("('%s')", s)));
+            sess.createNativeQuery("insert into NewDocIds values " + sj.toString()).executeUpdate();
+            tx.commit();
+        }
+        return new ResponseEntity<>("Dataset published", HttpStatus.OK);
     }
 
 }
