@@ -31,6 +31,8 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.AdminDAO;
+import edu.temple.cla.policydb.ppdpapp.api.daos.AdminDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.AssignmentTypeDAOImpl;
 import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
@@ -141,6 +143,12 @@ public class Application {
     @Bean(name = "batchDao")
     public BatchDAO getBatchDao(SessionFactory sessionFactory) {
         return new BatchDAOImpl(sessionFactory);
+    }
+
+    @Autowired
+    @Bean(name = "adminDao")
+    public AdminDAO getAdminDao(SessionFactory sessionFactory) {
+        return new AdminDAOImpl(sessionFactory);
     }
 
     @Autowired

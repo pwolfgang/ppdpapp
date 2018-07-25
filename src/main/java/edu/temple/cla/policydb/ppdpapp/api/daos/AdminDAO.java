@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,36 +29,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-var admin = angular.module('adminControllers', ['adminFactory']);
+package edu.temple.cla.policydb.ppdpapp.api.daos;
 
-
-admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'tablesAPI', 'authInfo', 
-    function ($scope, $location, adminAPI, tablesAPI, authInfo) {
-                $scope.loaded = false;
-                $scope.requestFailed = false;
-
-                // call tablesAPI to get table names.
-                tablesAPI.getAll(authInfo.token)
-                        .success(function (res) {
-                            $scope.dataset_type_dd_items = res;
-                            $scope.loaded = true;
-                            $scope.requestFailed = false;
-                        });
-                $scope.setDatasetType = function (tableObj) {
-                    $scope.dataset_type = tableObj;
-                };
-                
-                $scope.doPublish = function() {
-                    $scope.pricessing = true;
-                    adminAPI.publish(authInfo.token, $scope.dataset_type.TableName)
-                            .success(function (res) {
-                                $scope.processing = false;
-                            })
-                            .error(function (err) {
-                                $scope.error = err;
-                                $scope.processing = false;                             
-                            });
-                };
-    }]);
-
-
+/**
+ *
+ * @author Paul
+ */
+public interface AdminDAO {
+    
+    String doPublish(String tableName);
+    
+}

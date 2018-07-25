@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -29,36 +29,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-var admin = angular.module('adminControllers', ['adminFactory']);
+package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.AdminDAO;
+import edu.temple.cla.policydb.ppdpapp.api.models.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'tablesAPI', 'authInfo', 
-    function ($scope, $location, adminAPI, tablesAPI, authInfo) {
-                $scope.loaded = false;
-                $scope.requestFailed = false;
+/**
+ *
+ * @author Paul
+ */
+    
+@RestController
+@RequestMapping("/admin")
+public class AdminController {
+    
+    @Autowired
+    private AdminDAO adminDAO;
 
-                // call tablesAPI to get table names.
-                tablesAPI.getAll(authInfo.token)
-                        .success(function (res) {
-                            $scope.dataset_type_dd_items = res;
-                            $scope.loaded = true;
-                            $scope.requestFailed = false;
-                        });
-                $scope.setDatasetType = function (tableObj) {
-                    $scope.dataset_type = tableObj;
-                };
-                
-                $scope.doPublish = function() {
-                    $scope.pricessing = true;
-                    adminAPI.publish(authInfo.token, $scope.dataset_type.TableName)
-                            .success(function (res) {
-                                $scope.processing = false;
-                            })
-                            .error(function (err) {
-                                $scope.error = err;
-                                $scope.processing = false;                             
-                            });
-                };
-    }]);
-
+    @RequestMapping(method = RequestMethod.PUT, value="{tableName}")
+    public ResponseEntity<?> publish(@PathVariable String tableName, 
+            @RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(adminDAO.doPublish(tableName), HttpStatus.OK);
+    }
+}
 
