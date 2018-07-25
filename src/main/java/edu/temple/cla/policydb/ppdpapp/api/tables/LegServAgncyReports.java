@@ -32,6 +32,12 @@
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -155,6 +161,24 @@ public class LegServAgncyReports extends AbstractTable {
             StringJoiner sj = new StringJoiner(", ");
             hyperLinkList.forEach(s -> sj.add(String.format("('%s')", s)));
             sess.createNativeQuery("insert into NewDocIds values " + sj.toString()).executeUpdate();
+            String PAPolicy_Copy_BaseDir = "/var/ppdp/files/LegServiceAgencyReports/pdfs";
+            String PAPolicy_BaseDir = "/var/www/html/PAPolicy/LegServiceAgencyReports/pdfs";
+            String findNewDocuments = "select ID, Agency, FileName from NewDocIds "
+                    + "left join LSAReportsText on docID=ID";
+            NativeQuery<Tuple> findNewDocuentsQuery = 
+                    sess.createNativeQuery(findNewDocuments, Tuple.class);
+            findNewDocuentsQuery.stream()
+                    .forEach(tuple -> {
+                        String agency = (String)tuple.get("Agency");
+                        String fileName = (String)tuple.get("FileName");
+                        Path fromPath = FileSystems.getDefault().getPath(PAPolicy_Copy_BaseDir, agency, fileName);
+                        Path toPath = FileSystems.getDefault().getPath(PAPolicy_BaseDir, agency, fileName);
+                        try {
+                            Files.copy(fromPath, toPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
+                        } catch (IOException ioex) {
+                            throw new RuntimeException("Error copying " + fromPath + " to " + toPath, ioex);
+                        }          
+                    });            
             tx.commit();
         }
         return new ResponseEntity<>("Dataset published", HttpStatus.OK);
