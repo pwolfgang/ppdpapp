@@ -57,7 +57,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Paul
  */
 public class LegServAgncyReports extends AbstractTable {
-    
+
     public static final Logger LOGGER = Logger.getLogger(LegServAgncyReports.class);
 
     @Override
@@ -67,11 +67,11 @@ public class LegServAgncyReports extends AbstractTable {
             @SuppressWarnings("unchecked")
             Map<String, Object> report = mapper.readValue(docObjJson, Map.class);
             String agency = (String) report.get("Organization");
-            NativeQuery<Tuple> getAgencyID = 
-                    sess.createNativeQuery("select ID from LegServiceAgencies where Agency=\'" + agency + "\'",
+            NativeQuery<Tuple> getAgencyID
+                    = sess.createNativeQuery("select ID from LegServiceAgencies where Agency=\'" + agency + "\'",
                             Tuple.class);
             String agencyID = getAgencyID.stream()
-                    .map(tuple -> (String)tuple.get("ID"))
+                    .map(tuple -> (String) tuple.get("ID"))
                     .findFirst()
                     .get();
             String date = (String) report.get("Date");
@@ -82,7 +82,7 @@ public class LegServAgncyReports extends AbstractTable {
                     + "LSAReportsText where ID like(\"%s_%s_%%\")", agencyID, year);
             NativeQuery<Tuple> getLastId = sess.createNativeQuery(lastIdQuery, Tuple.class);
             String lastId = getLastId.stream()
-                    .map(tuple -> (String)tuple.get("maxId"))
+                    .map(tuple -> (String) tuple.get("maxId"))
                     .filter(Objects::nonNull)
                     .findFirst()
                     .orElse("x_x_0");
@@ -98,8 +98,8 @@ public class LegServAgncyReports extends AbstractTable {
                     Transaction tx = sess.beginTransaction();
                     NativeQuery<?> updateLSAReports = sess.createNativeQuery(
                             "insert into LSAReportsText (ID, Year, Agency, "
-                                    + "Title, FileName) values "
-                                    + "(?, ?, ?, ?, ?)");
+                            + "Title, FileName) values "
+                            + "(?, ?, ?, ?, ?)");
                     updateLSAReports.setParameter(1, newId);
                     updateLSAReports.setParameter(2, year);
                     updateLSAReports.setParameter(3, agency);
@@ -112,7 +112,7 @@ public class LegServAgncyReports extends AbstractTable {
                     return new ResponseEntity<>(report, HttpStatus.OK);
                 } catch (Exception e) {
                     LOGGER.error("Error uploading file", e);
-                    return new ResponseEntity<>("Error uploading file, see log for details", 
+                    return new ResponseEntity<>("Error uploading file, see log for details",
                             HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             } else {
@@ -123,11 +123,12 @@ public class LegServAgncyReports extends AbstractTable {
             return new ResponseEntity<>(ex.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Method to publish the dataset. This method will determine the new entries
      * in the PAPolicy_Copy database and load them into the PAPolicy database.
      * It will also copy the corresponding Legislative Service Agency reports.
+     *
      * @return ResponseEntity indicating success or failure.
      */
     @Override
@@ -143,42 +144,57 @@ public class LegServAgncyReports extends AbstractTable {
                     + "PAPolicy_Copy.LegServiceAgencyReports.ID=PAPolicy.LegServiceAgencyReports.ID "
                     + "where isNull(PAPolicy.LegServiceAgencyReports.ID) "
                     + "and not isNull(PAPolicy_Copy.LegServiceAgencyReports.FinalCode)";
-            String listNewReports = "select HyperLink from NewLSAReports where not isNull(Hyperlink)";
             Transaction tx = sess.beginTransaction();
+            // Find the new dataset entries and create a table
             sess.createNativeQuery(dropNewEntriesTable).executeUpdate();
             sess.createNativeQuery(createNewEntriesTable).executeUpdate();
+            // Find those new entries that reference a document
             String findNewDocIDs = "select HyperLink from NewLSAReports where not isNull(Hyperlink)";
             List<String> hyperLinkList = sess.createNativeQuery(findNewDocIDs, Tuple.class)
                     .stream()
                     .map(t -> {
-                        String[] parts = ((String)t.get("HyperLink")).split("=");
-                        return parts[1].substring(0, (parts[1].length())-1);
+                        String[] parts = ((String) t.get("HyperLink")).split("=");
+                        return parts[1].substring(0, (parts[1].length()) - 1);
                     })
                     .collect(toList());
+            // List the new document's ids in a table
             sess.createNativeQuery("drop table if exists NewDocIds").executeUpdate();
             String createNewDocIds = "create table NewDocIds (docId varchar(50))";
-            sess.createNativeQuery(createNewDocIds).executeUpdate(); 
+            sess.createNativeQuery(createNewDocIds).executeUpdate();
             StringJoiner sj = new StringJoiner(", ");
             hyperLinkList.forEach(s -> sj.add(String.format("('%s')", s)));
             sess.createNativeQuery("insert into NewDocIds values " + sj.toString()).executeUpdate();
+            // Copy the new documents from ppdp to PAPolicy
             String PAPolicy_Copy_BaseDir = "/var/ppdp/files/LegServiceAgencyReports/pdfs";
             String PAPolicy_BaseDir = "/var/www/html/PAPolicy/LegServiceAgencyReports/pdfs";
             String findNewDocuments = "select ID, Agency, FileName from NewDocIds "
                     + "left join LSAReportsText on docID=ID";
-            NativeQuery<Tuple> findNewDocuentsQuery = 
-                    sess.createNativeQuery(findNewDocuments, Tuple.class);
-            findNewDocuentsQuery.stream()
+            sess.createNativeQuery(findNewDocuments, Tuple.class)
+                    .stream()
                     .forEach(tuple -> {
-                        String agency = (String)tuple.get("Agency");
-                        String fileName = (String)tuple.get("FileName");
+                        String agency = (String) tuple.get("Agency");
+                        String fileName = (String) tuple.get("FileName");
                         Path fromPath = FileSystems.getDefault().getPath(PAPolicy_Copy_BaseDir, agency, fileName);
                         Path toPath = FileSystems.getDefault().getPath(PAPolicy_BaseDir, agency, fileName);
                         try {
                             Files.copy(fromPath, toPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
                         } catch (IOException ioex) {
                             throw new RuntimeException("Error copying " + fromPath + " to " + toPath, ioex);
-                        }          
-                    });            
+                        }
+                    });
+            // Insert the new documents into PAPolicy.LSAReportsText
+            sess.createNativeQuery("insert into PAPolicy.LSAReportsText "
+                    + "select ID, Year, Agency, Title, FileName from NewDocIds "
+                    + "left Join LSAReportsText on docID=ID")
+                    .executeUpdate();
+           sess.createNativeQuery("insert into PAPolicy.LegServiceAgencyReports "
+                    + "select LegServiceAgencyReports.ID, Title, Organization, "
+                    + "Date, LegServiceAgencyReports.Hyperlink, Abstract, "
+                    + "LegRequest, Recomendation, Tax, Elderly, "
+                    + "LegServiceAgencyReports.FinalCode from NewLSAReports "
+                    + "left join LegServiceAgencyReports on "
+                    + "NewLSAReports.ID = LegServiceAgencyReports.ID")
+                    .executeUpdate();
             tx.commit();
         }
         return new ResponseEntity<>("Dataset published", HttpStatus.OK);
