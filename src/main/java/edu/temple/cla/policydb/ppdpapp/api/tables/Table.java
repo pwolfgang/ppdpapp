@@ -330,6 +330,8 @@ public interface Table {
 
     ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file);
     
+    ResponseEntity<?> publishDataset();
+    
     void setSessionFactory(SessionFactory sessionFactory);
     
     /**
