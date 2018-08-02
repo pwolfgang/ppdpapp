@@ -498,11 +498,11 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 $scope.loaded = true;
                         $scope.requestFailed = false;
                         if (res.${codeColumn} !== null) {
-                $scope.UserCode = res.${codeColumn};
-                } else {
-                ${document}API.getCode(authInfo.token, $routeParams.doc_id)
-                        .success(function (res2) {
-                        $scope.UserCode = res2.Code;
+                            $scope.UserCode = res.${codeColumn};
+                        } else {
+                            ${document}API.getCode(authInfo.token, $routeParams.doc_id)
+                            .success(function (res2) {
+                            $scope.UserCode = res2.Code;
                         })
                         .error(function (err) {
                         alert('Unable to get user policy code for ' + 
