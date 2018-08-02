@@ -316,7 +316,11 @@ public class DocumentDAOImpl implements DocumentDAO {
                         + table.getId() + "' and Email = '" + email + "'", Tuple.class);
         return query.stream()
                 .map(MyTupleToEntityMapTransformer.INSTANCE)
-                .findFirst().get();
+                .findFirst().orElseGet(()->{
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("Code", "");
+                    return m;
+                });
     }
 
     @Override
