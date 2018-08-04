@@ -97,7 +97,7 @@ public class Application {
                 return datasource;
             } else {
                 BasicDataSource newDataSource = new BasicDataSource();
-                newDataSource.setDriver(datasource.getDriver());
+                newDataSource.setDriverClassName(datasource.getDriverClassName());
                 newDataSource.setUrl(datasource.getUrl());
                 newDataSource.setUsername(datasource.getUsername());
                 newDataSource.setPassword(datasource.getPassword());

@@ -21,12 +21,21 @@
             <id>UploadBillsData-mvn-repo</id>
             <url>https://raw.github.com/pwolfgang/UploadBillsData/mvn-repo</url>
         </repository>
+        <repository>
+            <id>UploadTranscriptData-mvn-repo</id>
+            <url>https://raw.github.com/pwolfgang/UploadTranscriptData/mvn-repo</url>
+        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>edu.temple.cla.policydb</groupId>
             <artifactId>uploadbillsdata</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.temple.cla.policydb</groupId>
+            <artifactId>uploadtranscriptdata</artifactId>
             <version>1.0.1</version>
         </dependency>
         <dependency>
@@ -37,7 +46,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.2.15.Final</version>
+            <version>5.3.3.Final</version>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
