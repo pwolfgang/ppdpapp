@@ -31,12 +31,82 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.papolicy.transcriptdata.TranscriptDAO;
+import edu.temple.cla.papolicy.uploadtranscriptdata.Main;
+import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
+import edu.temple.cla.policydb.ppdpapp.api.models.File;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Properties;
+import javax.sql.DataSource;
+import org.apache.log4j.Logger;
+import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import org.hibernate.SessionFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
 /**
  *
  * @author Paul Wolfgang
  */
 public class TranscriptTable extends AbstractTable {
+    private static final Logger LOGGER = Logger.getLogger(BillsTable.class);
     
+    private DataSource dataSource;
+    
+    @Override
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+    
+    private SessionFactory buildSessionFactory(DataSource dataSource) {
+        BasicDataSource basicDataSource = (BasicDataSource)dataSource;
+        Properties properties = new Properties();
+        properties.put("jdbc.driver", basicDataSource.getDriverClassName());
+        properties.put("jdbc.url", basicDataSource.getUrl());
+        properties.put("jdbc.username", basicDataSource.getUsername());
+        properties.put("jdbc.password", basicDataSource.getPassword());
+        return Main.configureSessionFactory(properties);
+    }
+    
+    @Override
+    public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        java.io.File baseDir = new java.io.File("/var/ppdp/files");
+        java.io.File javaFile = new java.io.File(baseDir, fileName);
+        File fileObj = new File();
+        try {
+            URL fileURL = javaFile.toURI().toURL();
+            fileObj.setFileURL(fileURL.toString());
+        } catch (MalformedURLException ex) {
+            // cannot happen
+        }
+        fileObj.setContentType(file.getContentType());
+
+        if (!file.isEmpty()) {
+            try {
+                byte[] bytes = file.getBytes();{
+                    InputStream input = new ByteArrayInputStream(bytes);
+                    // Create special session factory to access Transcript tables
+                    try (SessionFactory sessionFactory = buildSessionFactory(dataSource)) {
+                        TranscriptDAO transcriptDAO = new TranscriptDAO(sessionFactory);
+                        transcriptDAO.loadDocument(input);
+                    }
+                }
+                fileObj = fileDAO.save(fileObj);
+                return new ResponseEntity<>(fileObj, HttpStatus.OK);
+            } catch (Exception e) {
+                LOGGER.error("Error uploading file", e);
+                return new ResponseEntity<>(e.toString(), HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
+        }
+
+    }
     @Override
     public String getTextFieldsHtml() {
         StringBuilder stb = new StringBuilder(super.getTextFieldsHtml());
