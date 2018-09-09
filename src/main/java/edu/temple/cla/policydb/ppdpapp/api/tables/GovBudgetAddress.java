@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2018, Temple University
  * All rights reserved.
  *
@@ -35,10 +35,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 /**
- *
- * @author Paul Wolfgang
+ * Class to represent the Governors Budget Address. This class has all of the
+ * features of the StandardTable except that the default publishDataset is
+ * not applicable.
+ * @author Paul
  */
-public class BudgetTable extends AbstractTable {
+public class GovBudgetAddress extends StandardTable {
     
     @Override
     public ResponseEntity<?> publishDataset() {

@@ -47,7 +47,9 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -912,12 +914,12 @@ public abstract class AbstractTable implements Table {
      * @return Javascript code.
      */
     public String getMultiValuedFiltersFields() {
-        List<MultiValuedFilter> filterList = getMultiValuedFilterList();
-        if (filterList.isEmpty()) {
+        List<MultiValuedFilter> theFilterList = getMultiValuedFilterList();
+        if (theFilterList.isEmpty()) {
             return "";
         } else {
             StringJoiner stj = new StringJoiner(",\n");
-            filterList.forEach(filter -> {
+            theFilterList.forEach(filter -> {
                 stj.add(filter.getFieldWOID());
             });
             return stj.toString() + "\n";
@@ -1077,11 +1079,17 @@ public abstract class AbstractTable implements Table {
         String s = getIndexSubScript(index);
         return "                <p class=\"input-group\">\n"
                 + "                " + columnName + "</br>\n"
-                + "                <datepicker ng-model=\"dt" + s + "\" show-weeks=\"false\" class=\"well well-sm margin-bottom-xsmall\" style=\"display:inline-block\"></datepicker><br />\n"
-                + "                <input type=\"text\" class=\"form-control\" datepicker-popup=\"MM/dd/yyyy\" ng-model=\"dt" + s + "\" \n"
-                + "                       datepicker-options=\"dateOptions\" ng-required=\"true\" close-text=\"Close\" /><br />\n"
-                + "                <button type=\"button\" class=\"btn btn-sm btn-info\" ng-click=\"today" + s + "()\">Today</button>\n"
-                + "                <button type=\"button\" class=\"btn btn-sm btn-danger\" ng-click=\"clear" + s + "()\">Clear</button>\n"
+                + "                <datepicker ng-model=\"dt" + s 
+                + "\" show-weeks=\"false\" class=\"well well-sm margin-bottom-xsmall\" "
+                + "style=\"display:inline-block\"></datepicker><br />\n"
+                + "                <input type=\"text\" class=\"form-control\" "
+                + "datepicker-popup=\"MM/dd/yyyy\" ng-model=\"dt" + s + "\" \n"
+                + "                       datepicker-options=\"dateOptions\" "
+                + "ng-required=\"true\" close-text=\"Close\" /><br />\n"
+                + "                <button type=\"button\" class=\"btn btn-sm btn-info\" "
+                + "ng-click=\"today" + s + "()\">Today</button>\n"
+                + "                <button type=\"button\" class=\"btn btn-sm btn-danger\" "
+                + "ng-click=\"clear" + s + "()\">Clear</button>\n"
                 + "                </p>\n"
                 + "";
     }
@@ -1136,10 +1144,14 @@ public abstract class AbstractTable implements Table {
                     + "\n"
                     + "        <div class=\"form-group row\">\n"
                     + "            <div class=\"col-md-12\">\n"
-                    + "                <span class=\"btn btn-success btn-file btn-lg\" ng-disabled=\"form.$invalid || processing\">\n"
-                    + "                    <span class=\"glyphicon glyphicon-plus\"></span> Select file and Upload\n"
-                    + "                    <input type=\"file\" ng-file-select=\"onFileSelect($files)\" />\n"
-                    + "                    <i ng-show=\"processing\" class=\"fa fa-spinner fa-spin\"></i>\n"
+                    + "                <span class=\"btn btn-success btn-file btn-lg\" "
+                    + "ng-disabled=\"form.$invalid || processing\">\n"
+                    + "                    <span class=\"glyphicon glyphicon-plus\"></span> "
+                    + "Select file and Upload\n"
+                    + "                    <input type=\"file\" "
+                    + "ng-file-select=\"onFileSelect($files)\" />\n"
+                    + "                    <i ng-show=\"processing\" "
+                    + "class=\"fa fa-spinner fa-spin\"></i>\n"
                     + "                </span>\n"
                     + "            </div>\n"
                     + "        </div>\n"
@@ -1159,9 +1171,30 @@ public abstract class AbstractTable implements Table {
             return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
     }
     
+    /**
+     * Method to publish the new documents. This method finds table entries in
+     * the PAPolicy_Copy version of a table that do not have a corresponding
+     * row in the PAPolicy version, and whose :codeColumn is not null. These rows are
+     * then inserted into the PAPolicy version. This method is used only for those
+     * tables which other tables are not linked to it. 
+     * @return HttpStatus.OK if successful, otherwise an error status.
+     */
     @Override
     public ResponseEntity<?> publishDataset() {
-        return new ResponseEntity<>("Publishing Dataset not Supported", HttpStatus.NOT_IMPLEMENTED);
+        try (Session sess = sessionFactory.openSession()) {
+        String query = "insert into PAPolicy."+tableName+" "
+                + "(select * from PAPolicy_Copy."+tableName+" where "
+                + "PAPolicy_Copy."+tableName+".ID in (select PAPolicy_Copy."+tableName+".ID "
+                + "from PAPolicy_Copy."+tableName+" left join PAPolicy."+tableName+" on "
+                + "PAPolicy_Copy."+tableName+".ID=PAPolicy."+tableName+".ID "
+                + "where isNull (PAPolicy."+tableName+".ID)) and "
+                + "not isNull(PAPolicy_Copy."+tableName+"."+codeColumn+"))";
+            Transaction tx = sess.beginTransaction();
+            sess.createNativeQuery(query)
+                    .executeUpdate();
+            tx.commit();
+        }
+        return new ResponseEntity<>("OK", HttpStatus.OK);
     }
     
     @Override

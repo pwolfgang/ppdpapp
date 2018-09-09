@@ -31,10 +31,18 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 /**
  *
  * @author Paul Wolfgang
  */
 public class PublicOpinionTable extends AbstractTable {
     
+    @Override
+    public ResponseEntity<?> publishDataset() {
+        return new ResponseEntity<>("Not implemented for this document type", HttpStatus.NOT_IMPLEMENTED);
+    }
+
 }

@@ -107,6 +107,12 @@ public class TranscriptTable extends AbstractTable {
         }
 
     }
+    
+    @Override
+    public ResponseEntity<?> publishDataset() {
+        return new ResponseEntity<>("Not implemented for this document type", HttpStatus.NOT_IMPLEMENTED);
+    }
+
     @Override
     public String getTextFieldsHtml() {
         StringBuilder stb = new StringBuilder(super.getTextFieldsHtml());
