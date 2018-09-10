@@ -43,13 +43,15 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- *
+ * Class to manage the House Hearing Transcripts.
  * @author Paul Wolfgang
  */
 public class TranscriptTable extends AbstractTable {
@@ -62,6 +64,12 @@ public class TranscriptTable extends AbstractTable {
         this.dataSource = dataSource;
     }
     
+    /**
+     * Create a session factory to be used to populate the Transcript table.
+     * The file uploading processing apparently cannot use the global SessionFactory.
+     * @param dataSource The JDBC DataSource to access the database.
+     * @return A SessionFactory to access the database.
+     */
     private SessionFactory buildSessionFactory(DataSource dataSource) {
         BasicDataSource basicDataSource = (BasicDataSource)dataSource;
         Properties properties = new Properties();
@@ -72,6 +80,14 @@ public class TranscriptTable extends AbstractTable {
         return Main.configureSessionFactory(properties);
     }
     
+    /**
+     * Method to upload the Transcript file and populate the database.
+     * This method invokes the stand-alone program that will parse the
+     * transcript XML file and populate the database tables.
+     * @param fileDAO Data access object for the File table. NOT USED.
+     * @param file The MultipartFile from the HTML POST request
+     * @return A ResponseEntity indicating success or an error.
+     */
     @Override
     public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
         String fileName = file.getOriginalFilename();
@@ -107,6 +123,55 @@ public class TranscriptTable extends AbstractTable {
         }
 
     }
+    
+    /**
+     * Method to publish the new documents. This method finds table entries in
+     * the PAPolicy_Copy version of a table that do not have a corresponding
+     * row in the PAPolicy version, and whose code is not null. These rows are
+     * then inserted into the PAPolicy version. This method is specific to the
+     * Transcript table since it also uploads the records from the other tables
+     * that are linked to this one.
+     * @return HttpStatus.OK if successful, otherwise an error status.
+     */
+    @Override
+    public ResponseEntity<?> publishDataset() {
+        String dropNewIDs = "drop table if exists NewTranscripts";
+        String findNewIDs =  "create table NewTranscripts "
+                + "select PAPolicy_Copy.Transcript.ID "
+                + "from PAPolicy_Copy.Transcript left join PAPolicy.Transcript "
+                + "on PAPolicy_Copy.Transcript.ID=PAPolicy.Transcript.ID "
+                + "where isNull(PAPolicy.Transcript.ID) "
+                + "and not isNull(PAPolicy_Copy.Transcript.FinalCode)";
+        String insertWitness = "insert into PAPolicy.Witness "
+                + "select * from PAPolicy_Copy.Witness "
+                + "where PAPolicy_Copy.Witness.TranscriptID "
+                + "in (select ID from NewTranscripts)";
+        String insertTranscriptCommittee = "insert into PAPolicy.Transcript_Committee "
+                + "select * from PAPolicy_Copy.Transcript_Committee "
+                + "where PAPolicy_Copy.Transcript_Committee.TranscriptID "
+                + "in (select ID from NewTranscripts)";
+        String insertTranscriptBillID = "insert into PAPolicy.Transcript_BillID "
+                + "select * from PAPolicy_Copy.Transcript_BillID "
+                + "where PAPolicy_Copy.Transcript_BillID.TranscriptID "
+                + "in (select ID from NewTranscripts)";
+        String insertTranscript = "insert into PAPolicy.Transcript "
+                + "select * from PAPolicy_Copy.Transcript "
+                + "where PAPolicy_Copy.Transcript.ID "
+                + "in (select ID from NewTranscripts)";
+
+        try (Session sess = getSessionFactory().openSession()) {
+            Transaction tx = sess.beginTransaction();
+            sess.createNativeQuery(dropNewIDs).executeUpdate();
+            sess.createNativeQuery(findNewIDs).executeUpdate();
+            sess.createNativeQuery(insertWitness).executeUpdate();
+            sess.createNativeQuery(insertTranscriptCommittee).executeUpdate();
+            sess.createNativeQuery(insertTranscriptBillID).executeUpdate();
+            sess.createNativeQuery(insertTranscript).executeUpdate();
+            tx.commit();
+        }
+        return new ResponseEntity<>(getDocumentName() + " has been published", HttpStatus.OK);
+    }
+
     @Override
     public String getTextFieldsHtml() {
         StringBuilder stb = new StringBuilder(super.getTextFieldsHtml());
