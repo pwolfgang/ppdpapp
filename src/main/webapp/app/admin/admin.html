@@ -52,7 +52,9 @@ POSSIBILITY OF SUCH DAMAGE.
             <i ng-show="processing" class="fa fa-spinner fa-spin"></i>
         </button>
     </div>
-
+        <div ng-show="success" class="row margin-top-medium"><div class="col-md-4 col-md-push-4">
+                <alert type="success" close="closeAlert()"> {{success}}</alert>
+            </div>
         <div ng-show="error" class="row margin-top-medium"><div class="col-md-4 col-md-push-4">
             <alert type="danger" close="closeAlert()">{{error}}</alert>
         </div></div>

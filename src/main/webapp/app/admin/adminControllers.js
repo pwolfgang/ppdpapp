@@ -53,6 +53,7 @@ admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'tablesAPI', '
                     adminAPI.publish(authInfo.token, $scope.dataset_type.TableName)
                             .success(function (res) {
                                 $scope.processing = false;
+                                $scope.success = res;
                             })
                             .error(function (err) {
                                 $scope.error = err;

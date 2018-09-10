@@ -1174,7 +1174,7 @@ public abstract class AbstractTable implements Table {
     /**
      * Method to publish the new documents. This method finds table entries in
      * the PAPolicy_Copy version of a table that do not have a corresponding
-     * row in the PAPolicy version, and whose :codeColumn is not null. These rows are
+     * row in the PAPolicy version, and whose code is not null. These rows are
      * then inserted into the PAPolicy version. This method is used only for those
      * tables which other tables are not linked to it. 
      * @return HttpStatus.OK if successful, otherwise an error status.
@@ -1194,7 +1194,7 @@ public abstract class AbstractTable implements Table {
                     .executeUpdate();
             tx.commit();
         }
-        return new ResponseEntity<>("OK", HttpStatus.OK);
+        return new ResponseEntity<>(documentName + " has been published", HttpStatus.OK);
     }
     
     @Override
