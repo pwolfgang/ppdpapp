@@ -49,7 +49,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- *
+ * Class to manage the House Hearing Transcripts.
  * @author Paul Wolfgang
  */
 public class TranscriptTable extends AbstractTable {
@@ -62,6 +62,12 @@ public class TranscriptTable extends AbstractTable {
         this.dataSource = dataSource;
     }
     
+    /**
+     * Create a session factory to be used to populate the Transcript table.
+     * The file uploading processing apparently cannot use the global SessionFactory.
+     * @param dataSource The JDBC DataSource to access the database.
+     * @return A SessionFactory to access the database.
+     */
     private SessionFactory buildSessionFactory(DataSource dataSource) {
         BasicDataSource basicDataSource = (BasicDataSource)dataSource;
         Properties properties = new Properties();
@@ -72,6 +78,14 @@ public class TranscriptTable extends AbstractTable {
         return Main.configureSessionFactory(properties);
     }
     
+    /**
+     * Method to upload the Transcript file and populate the database.
+     * This method invokes the stand-alone program that will parse the
+     * transcript XML file and populate the database tables.
+     * @param fileDAO Data access object for the File table. NOT USED.
+     * @param file The MultipartFile from the HTML POST request
+     * @return A ResponseEntity indicating success or an error.
+     */
     @Override
     public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
         String fileName = file.getOriginalFilename();
