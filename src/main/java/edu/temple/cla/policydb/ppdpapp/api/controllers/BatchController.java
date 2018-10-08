@@ -96,10 +96,12 @@ public class BatchController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{id}/add/user")
-    public ResponseEntity<?> postAddUser(@PathVariable int id, @RequestBody User userObj, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> postAddUser(@PathVariable int id, 
+            @RequestBody User userObj, @RequestParam(value = "user") User user) {
         List<String> previouslyCodedDocuments = documentDAO.verifyUser(id, userObj.getEmail());
-        if (previouslyCodedDocuments.isEmpty()) {
-            Batch batchObj = batchDAO.find(id);
+        Batch batchObj = batchDAO.find(id);
+        if (batchObj.getAssignmentDescription().equals("Cluster")
+                || previouslyCodedDocuments.isEmpty()) {
             List<User> userList = batchObj.getUsers();
             userList.add(userObj);
             batchDAO.save(batchObj);
