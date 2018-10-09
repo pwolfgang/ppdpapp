@@ -334,6 +334,10 @@ public interface Table {
     
     void setSessionFactory(SessionFactory sessionFactory);
     
+    String getFileUploadHtml();
+    
+    String getFileUploadJavaScript();
+    
     /**
      *
      * @return

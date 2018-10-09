@@ -395,7 +395,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                     }
                 };
         }])
-        .controller('${document}CreateCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'newspapersAPI', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, newspapersAPI, batchesAPI) {
+        .controller('${document}CreateCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'newspapersAPI', 'batchesAPI', 'filesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, newspapersAPI, batchesAPI, filesAPI) {
         // Represents the loading state
             $scope.loaded = false;
             $scope.requestFailed = false;
@@ -413,6 +413,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
         };
         ${multiValuedFiltersJs}
         ${typeAheadFieldsJs}
+        $if(fileUploadJavaScript) ${fileUploadJavaScript}
         $scope.loaded=true;
             $scope.create = function () {
                 $scope.processing = true;

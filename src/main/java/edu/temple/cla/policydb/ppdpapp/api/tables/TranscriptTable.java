@@ -55,7 +55,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Paul Wolfgang
  */
 public class TranscriptTable extends AbstractTable {
-    private static final Logger LOGGER = Logger.getLogger(BillsTable.class);
+    private static final Logger LOGGER = Logger.getLogger(TranscriptTable.class);
     
     private DataSource dataSource;
     

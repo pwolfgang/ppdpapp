@@ -36,7 +36,7 @@
         <dependency>
             <groupId>edu.temple.cla.policydb</groupId>
             <artifactId>uploadtranscriptdata</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>

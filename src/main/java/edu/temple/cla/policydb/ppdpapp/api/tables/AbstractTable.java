@@ -86,7 +86,7 @@ public abstract class AbstractTable implements Table {
     private List<Filter> filterList;
     private List<MultiValuedFilter> multiValuedFilterList;
     private List<BinaryFilter> binaryFilterList;
-    private List<MetaData> metaDataList;
+    protected List<MetaData> metaDataList;
     private List<MetaData> textFieldMetaData;
     private List<MetaData> typeAheadFiledsMetaData;
     private List<MetaData> dateFieldMetaData;
@@ -573,6 +573,7 @@ public abstract class AbstractTable implements Table {
         templateParameters.put("setDateFieldsFromRes", getSetDateFieldsFromRes());
         templateParameters.put("dateFieldsHtml", getDateFieldsHtml());
         templateParameters.put("fileUploadHtml", getFileUploadHtml());
+        templateParameters.put("fileUploadJavaScript", getFileUploadJavaScript());
         return templateParameters;
     }
 
@@ -1127,38 +1128,15 @@ public abstract class AbstractTable implements Table {
     public void setColumns(Collection<String> columns) {
         this.columns = Collections.unmodifiableSet(new LinkedHashSet<>(columns));
     }
-
+    
+    @Override
     public String getFileUploadHtml() {
-        boolean fileUpload = false;
-        for (MetaData metaData : metaDataList) {
-            if (metaData.getDataType().equals("fileUpload")) {
-                fileUpload = true;
-            }
-        }
-        if (fileUpload) {
-            return "        <div class=\"row margin-top-large\">\n"
-                    + "            <div class=\"col-md-6\">\n"
-                    + "                <progressbar value=\"progress\"></progressbar>\n"
-                    + "            </div>\n"
-                    + "        </div>\n"
-                    + "\n"
-                    + "        <div class=\"form-group row\">\n"
-                    + "            <div class=\"col-md-12\">\n"
-                    + "                <span class=\"btn btn-success btn-file btn-lg\" "
-                    + "ng-disabled=\"form.$invalid || processing\">\n"
-                    + "                    <span class=\"glyphicon glyphicon-plus\"></span> "
-                    + "Select file and Upload\n"
-                    + "                    <input type=\"file\" "
-                    + "ng-file-select=\"onFileSelect($files)\" />\n"
-                    + "                    <i ng-show=\"processing\" "
-                    + "class=\"fa fa-spinner fa-spin\"></i>\n"
-                    + "                </span>\n"
-                    + "            </div>\n"
-                    + "        </div>\n"
-                    + "";
-        } else {
-            return null;
-        }
+        return null;
+    }
+    
+    @Override
+    public String getFileUploadJavaScript() {
+        return null;
     }
     
     @Override

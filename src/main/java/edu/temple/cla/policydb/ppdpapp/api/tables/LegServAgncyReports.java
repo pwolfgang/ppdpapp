@@ -34,6 +34,7 @@ package edu.temple.cla.policydb.ppdpapp.api.tables;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
+import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -107,7 +108,8 @@ public class LegServAgncyReports extends AbstractTable {
     }
 
     /**
-     * 
+     * Method to respond to the POST file/upload where the tableId references
+     * the Legislative Service Agency Reports.
      * @param docObjJson
      * @param file
      * @return 
@@ -252,4 +254,47 @@ public class LegServAgncyReports extends AbstractTable {
         return new ResponseEntity<>("Dataset published", HttpStatus.OK);
     }
 
+    public String getFileUploadHtml() {
+        boolean fileUpload = false;
+        for (MetaData metaData : metaDataList) {
+            if (metaData.getDataType().equals("fileUpload")) {
+                fileUpload = true;
+            }
+        }
+        if (fileUpload) {
+            return "        <div class=\"row margin-top-large\">\n"
+                    + "            <div class=\"col-md-6\">\n"
+                    + "                <progressbar value=\"progress\"></progressbar>\n"
+                    + "            </div>\n"
+                    + "        </div>\n"
+                    + "\n"
+                    + "        <div class=\"form-group row\">\n"
+                    + "            <div class=\"col-md-12\">\n"
+                    + "                <span class=\"btn btn-success btn-file btn-lg\" "
+                    + "ng-disabled=\"form.$invalid || processing\">\n"
+                    + "                    <span class=\"glyphicon glyphicon-plus\"></span> "
+                    + "Select file and Upload\n"
+                    + "                    <input type=\"file\" "
+                    + "value=\"$scope.lsarFileName\" "
+                    + "ng-file-select=\"onFileSelect($files)\" />\n"
+                    + "                    <i ng-show=\"processing\" "
+                    + "class=\"fa fa-spinner fa-spin\"></i>\n"
+                    + "                </span>\n"
+                    + "            </div>\n"
+                    + "        </div>\n"
+                    + "";
+        } else {
+            return null;
+        }
+    }
+    
+    public String getFileUploadJavaScript() {
+        return
+            "var batch_id = $routeParams.batch_id;\n" +
+            "if (batch_id !== 'none') {\n" +
+                "var batch = batchesAPI.find(authInfo.token, batch_id);\n" +
+                "var file = filesAPI.find(authInfo.token, batch.fileID);\n" +
+                "$scope.fsarFileName = file.fileURL;\n" +
+            "}\n";
+    }
 }
