@@ -79,6 +79,8 @@ angular.module('filesControllers', ['filesFactory'])
                         dateDue: $scope.dt,
                         dateAdded: new Date(),
                         tablesID: $scope.batch_type.ID,
+                        assignmentTypeID: 1,
+                        assignmentDescription: 'Data Entry',
                         creator: authInfo.email
                     };
 
