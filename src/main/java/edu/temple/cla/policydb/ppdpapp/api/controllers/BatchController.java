@@ -100,7 +100,7 @@ public class BatchController {
             @RequestBody User userObj, @RequestParam(value = "user") User user) {
         List<String> previouslyCodedDocuments = documentDAO.verifyUser(id, userObj.getEmail());
         Batch batchObj = batchDAO.find(id);
-        if (batchObj.getAssignmentDescription().equals("Cluster")
+        if ("Cluster".equals(batchObj.getAssignmentDescription())
                 || previouslyCodedDocuments.isEmpty()) {
             List<User> userList = batchObj.getUsers();
             userList.add(userObj);
