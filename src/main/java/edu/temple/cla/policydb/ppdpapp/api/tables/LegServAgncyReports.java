@@ -52,6 +52,7 @@ import java.util.StringJoiner;
 import static java.util.stream.Collectors.toList;
 import javax.persistence.Tuple;
 import org.apache.log4j.Logger;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
@@ -70,6 +71,7 @@ public class LegServAgncyReports extends AbstractTable {
     /**
      * Method to respond to the POST file/upload where the tableId references
      * the Legislative Service Agency Reports.
+     *
      * @param fileDAO The FileDAO to be inserted into the File table.
      * @param file The file being uploaded.
      * @return ResponseEntity indicating success or an error. If success, then
@@ -92,8 +94,8 @@ public class LegServAgncyReports extends AbstractTable {
         if (!file.isEmpty()) {
             try {
                 byte[] bytes = file.getBytes();
-                try (BufferedOutputStream stream = 
-                        new BufferedOutputStream(new FileOutputStream(javaFile))) {
+                try (BufferedOutputStream stream
+                        = new BufferedOutputStream(new FileOutputStream(javaFile))) {
                     stream.write(bytes);
                 }
                 fileObj = fileDAO.save(fileObj);
@@ -108,19 +110,62 @@ public class LegServAgncyReports extends AbstractTable {
     }
 
     /**
+     * Method to pre-process Legislative Service Agency Report document. This
+     * method checks the value of the Hyperlink field. If it references a local
+     * file on the server, the file is moved to the directory where the
+     * Legislative Service Agency Reports are stored and a new Hyperlink is
+     * created.
+     *
+     * @param docObj
+     */
+    @Override
+    public void preProcessDocument(Map<String, Object> docObj) {
+        String hyperlink = (String)docObj.get("Hyperlink");
+        if (hyperlink.startsWith("file:")) {
+            int posColon = hyperlink.indexOf(":");
+            String fullPathName = hyperlink.substring(posColon + 1);
+            java.io.File sourceFile = new java.io.File(fullPathName);
+            String fileName = sourceFile.getName();
+            try {
+                java.io.File javaFile = enterFileIntoDatabase(docObj, fileName);
+                sourceFile.renameTo(javaFile);
+            } catch (Exception e) {
+                throw new RuntimeException("Error entering LSAR file into database", e);
+            }
+        }    
+    }
+
+    /**
      * Method to respond to the POST file/upload where the tableId references
      * the Legislative Service Agency Reports.
+     *
      * @param docObjJson
      * @param file
-     * @return 
+     * @return
      */
     @Override
     public ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file) {
-        try (Session sess = getSessionFactory().openSession()) {
+        if (file.isEmpty()) {
+            return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
+        }
+        try {
             ObjectMapper mapper = new ObjectMapper();
             @SuppressWarnings("unchecked")
-            Map<String, Object> report = mapper.readValue(docObjJson, Map.class);
-            String agency = (String) report.get("Organization");
+            Map<String, Object> docObj = mapper.readValue(docObjJson, Map.class);
+            java.io.File javaFile = enterFileIntoDatabase(docObj, file.getOriginalFilename());
+            file.transferTo(javaFile);
+            return new ResponseEntity<>(docObj, HttpStatus.OK);
+        } catch (Exception e) {
+            LOGGER.error("Error uploading file", e);
+            return new ResponseEntity<>("Error uploading file, see log for details",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public java.io.File enterFileIntoDatabase(Map<String, Object> docObj, String fileName) 
+            throws NumberFormatException, HibernateException, IOException {
+        try (Session sess = getSessionFactory().openSession()) {
+            String agency = (String) docObj.get("Organization");
             NativeQuery<Tuple> getAgencyID
                     = sess.createNativeQuery("select ID from LegServiceAgencies where Agency=\'" + agency + "\'",
                             Tuple.class);
@@ -128,10 +173,10 @@ public class LegServAgncyReports extends AbstractTable {
                     .map(tuple -> (String) tuple.get("ID"))
                     .findFirst()
                     .get();
-            String date = (String) report.get("Date");
+            String date = (String) docObj.get("Date");
             String[] dateTokens = date.split("-");
             String year = dateTokens[0];
-            String title = (String) report.get("Title");
+            String title = (String) docObj.get("Title");
             String lastIdQuery = String.format("select max(ID) maxId from "
                     + "LSAReportsText where ID like(\"%s_%s_%%\")", agencyID, year);
             NativeQuery<Tuple> getLastId = sess.createNativeQuery(lastIdQuery, Tuple.class);
@@ -142,39 +187,24 @@ public class LegServAgncyReports extends AbstractTable {
                     .orElse("x_x_0");
             int lastIdNum = Integer.parseInt(lastId.split("_")[2]);
             String newId = String.format("%s_%s_%03d", agencyID, year, lastIdNum + 1);
-            String fileName = file.getOriginalFilename();
             java.io.File baseDir = new java.io.File("/var/ppdp/files/LegServiceAgencyReports/pdfs");
             java.io.File agencyDir = new java.io.File(baseDir, agency);
             java.io.File javaFile = new java.io.File(agencyDir, fileName);
-            if (!file.isEmpty()) {
-                try {
-                    file.transferTo(javaFile);
-                    Transaction tx = sess.beginTransaction();
-                    NativeQuery<?> updateLSAReports = sess.createNativeQuery(
-                            "insert into LSAReportsText (ID, Year, Agency, "
+            Transaction tx = sess.beginTransaction();
+            NativeQuery<?> updateLSAReports = sess.createNativeQuery(
+                    "insert into LSAReportsText (ID, Year, Agency, "
                             + "Title, FileName) values "
                             + "(?, ?, ?, ?, ?)");
-                    updateLSAReports.setParameter(1, newId);
-                    updateLSAReports.setParameter(2, year);
-                    updateLSAReports.setParameter(3, agency);
-                    updateLSAReports.setParameter(4, title);
-                    updateLSAReports.setParameter(5, fileName);
-                    updateLSAReports.executeUpdate();
-                    tx.commit();
-                    String url = "#lsar.spg?ID=" + newId + "#";
-                    report.put("Hyperlink", url);
-                    return new ResponseEntity<>(report, HttpStatus.OK);
-                } catch (Exception e) {
-                    LOGGER.error("Error uploading file", e);
-                    return new ResponseEntity<>("Error uploading file, see log for details",
-                            HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                return new ResponseEntity<>("file NOT upload No DATA", HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception ex) {
-            LOGGER.error("Error Uploading File", ex);
-            return new ResponseEntity<>(ex.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            updateLSAReports.setParameter(1, newId);
+            updateLSAReports.setParameter(2, year);
+            updateLSAReports.setParameter(3, agency);
+            updateLSAReports.setParameter(4, title);
+            updateLSAReports.setParameter(5, fileName);
+            updateLSAReports.executeUpdate();
+            tx.commit();
+            String url = "#lsar.spg?ID=" + newId + "#";
+            docObj.put("Hyperlink", url);
+            return javaFile;
         }
     }
 
@@ -241,7 +271,7 @@ public class LegServAgncyReports extends AbstractTable {
                     + "select ID, Year, Agency, Title, FileName from NewDocIds "
                     + "left Join LSAReportsText on docID=ID")
                     .executeUpdate();
-           sess.createNativeQuery("insert into PAPolicy.LegServiceAgencyReports "
+            sess.createNativeQuery("insert into PAPolicy.LegServiceAgencyReports "
                     + "select LegServiceAgencyReports.ID, Title, Organization, "
                     + "Date, LegServiceAgencyReports.Hyperlink, Abstract, "
                     + "LegRequest, Recomendation, Tax, Elderly, "
@@ -262,39 +292,55 @@ public class LegServAgncyReports extends AbstractTable {
             }
         }
         if (fileUpload) {
-            return "        <div class=\"row margin-top-large\">\n"
+            return "        <div class=\"row margin-top-large ng-binding ng-hide\" \n"
+                    + "             ng-show=\"fileNameNotDefined\">\n"
                     + "            <div class=\"col-md-6\">\n"
                     + "                <progressbar value=\"progress\"></progressbar>\n"
                     + "            </div>\n"
                     + "        </div>\n"
-                    + "\n"
                     + "        <div class=\"form-group row\">\n"
-                    + "            <div class=\"col-md-12\">\n"
-                    + "                <span class=\"btn btn-success btn-file btn-lg\" "
-                    + "ng-disabled=\"form.$invalid || processing\">\n"
-                    + "                    <span class=\"glyphicon glyphicon-plus\"></span> "
-                    + "Select file and Upload\n"
-                    + "                    <input type=\"file\" "
-                    + "value=\"$scope.lsarFileName\" "
-                    + "ng-file-select=\"onFileSelect($files)\" />\n"
-                    + "                    <i ng-show=\"processing\" "
-                    + "class=\"fa fa-spinner fa-spin\"></i>\n"
-                    + "                </span>\n"
+                    + "            <div class=\"ng-binding ng-hide\" ng-show=\"fileNameNotDefined\">\n"
+                    + "                <div class=\"col-md-12\">\n"
+                    + "                    <span class=\"btn btn-success btn-file btn-lg\" \n"
+                    + "                          ng-disabled=\"form.$invalid || processing\">\n"
+                    + "                        <span class=\"glyphicon glyphicon-plus\"></span> \n"
+                    + "                        Select file and Upload\n"
+                    + "                        <input type=\"file\" ng-file-select=\"onFileSelect($files)\" />\n"
+                    + "                        <i ng-show=\"processing\" class=\"fa fa-spinner fa-spin\"></i>\n"
+                    + "                    </span>\n"
+                    + "                </div>\n"
                     + "            </div>\n"
-                    + "        </div>\n"
-                    + "";
+                    + "        </div>\n";
         } else {
             return null;
         }
     }
-    
+
     public String getFileUploadJavaScript() {
-        return
-            "var batch_id = $routeParams.batch_id;\n" +
-            "if (batch_id !== 'none') {\n" +
-                "var batch = batchesAPI.find(authInfo.token, batch_id);\n" +
-                "var file = filesAPI.find(authInfo.token, batch.fileID);\n" +
-                "$scope.fsarFileName = file.fileURL;\n" +
-            "}\n";
+        return "var batch_id = $routeParams.batch_id;\n"
+                + "if (batch_id !== 'none') {\n"
+                + "    batchesAPI.find(authInfo.token, batch_id)\n"
+                + "        .success(function (batchObj) {\n"
+                + "            filesAPI.find(authInfo.token, batchObj.fileID)\n"
+                + "                .success(function (fileObj) {\n"
+                + "                    $scope.Hyperlink = fileObj.fileURL;\n"
+                + "                    $scope.fileNameDefined = Boolean(fileObj.fileURL);\n"
+                + "                    $scope.fileNameNotDefined = !Boolean(fileObj.fileURL);\n"
+                + "                })\n"
+                + "                .error(function (err) {\n"
+                + "                    $scope.errMsg = err;\n"
+                + "                    $scope.requestFailed = true;\n"
+                + "                });\n"
+                + "        })\n"
+                + "        .error(function (err) {\n"
+                + "            $scope.errMsg = err;\n"
+                + "            $scope.requestFailed = true;\n"
+                + "        });\n"
+                + "} else {\n"
+                + "      $scope.fileNameDefined = false;\n"
+                + "      $scope.fileNameNotDefined = true;\n"
+                + "}\n"
+                + "\n";
     }
+
 }

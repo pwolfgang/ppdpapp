@@ -338,6 +338,8 @@ public interface Table {
     
     String getFileUploadJavaScript();
     
+    default void preProcessDocument(Map<String, Object> docObj) {}
+    
     /**
      *
      * @return

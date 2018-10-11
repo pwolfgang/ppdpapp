@@ -7,7 +7,7 @@ angular.module('filesFactory', [])
                     return $http.get(urlBase + '?token=' + token);
                 };
                 dataFactory.find = function(token, file_id) {
-                    return $http.get(urlBase + '/' + file_id + '/find/?token=' + token);
+                    return $http.get(urlBase + '/' + file_id + '?token=' + token);
                 }
                 dataFactory.findBatch = function (token, file_id) {
                     return $http.get(urlBase + '/' + file_id + '/batches/?token=' + token);
