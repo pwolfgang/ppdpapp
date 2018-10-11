@@ -158,6 +158,8 @@ public class DocumentController {
     @RequestMapping(method = RequestMethod.POST, value = "/{tableName}")
     public ResponseEntity<?> insertDocument(@RequestBody Map<String, Object> docObj, 
             @PathVariable String tableName, @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableByTableName(tableName);
+        table.preProcessDocument(docObj);
         int docID = documentDAO.insertDocument(tableName, docObj);
         return new ResponseEntity<>(docID, HttpStatus.OK);
     }

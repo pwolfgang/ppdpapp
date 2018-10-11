@@ -334,6 +334,12 @@ public interface Table {
     
     void setSessionFactory(SessionFactory sessionFactory);
     
+    String getFileUploadHtml();
+    
+    String getFileUploadJavaScript();
+    
+    default void preProcessDocument(Map<String, Object> docObj) {}
+    
     /**
      *
      * @return
