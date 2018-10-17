@@ -4,7 +4,7 @@
 
     <groupId>edu.temple.cla.papolicy.wolfgang</groupId>
     <artifactId>newppdpapp</artifactId>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
     <packaging>war</packaging>
 
     <name>newppdpapp</name>
@@ -13,7 +13,7 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
-        <spring.version>5.0.4.RELEASE</spring.version>
+        <spring.version>5.0.6.RELEASE</spring.version>
     </properties>
     
     <repositories>
