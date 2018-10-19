@@ -318,7 +318,7 @@ public class DocumentDAOImpl implements DocumentDAO {
                 .map(MyTupleToEntityMapTransformer.INSTANCE)
                 .findFirst().orElseGet(()->{
                     Map<String, Object> m = new HashMap<>();
-                    m.put("Code", "");
+//                    m.put("Code", "");
                     return m;
                 });
     }
