@@ -4,7 +4,7 @@
 
     <groupId>edu.temple.cla.papolicy.wolfgang</groupId>
     <artifactId>newppdpapp</artifactId>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <packaging>war</packaging>
 
     <name>newppdpapp</name>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>edu.temple.cla.policydb</groupId>
             <artifactId>uploadbillsdata</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>edu.temple.cla.policydb</groupId>
