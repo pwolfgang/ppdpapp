@@ -1160,8 +1160,13 @@ public abstract class AbstractTable implements Table {
     @Override
     public ResponseEntity<?> publishDataset() {
         try (Session sess = sessionFactory.openSession()) {
-        String query = "insert into PAPolicy."+tableName+" "
-                + "(select * from PAPolicy_Copy."+tableName+" where "
+            String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS " +
+                    "where table_name='" + tableName + "' and table_schema='PAPolicy'";
+            @SuppressWarnings("unchecked")
+            List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
+            String selectedColumns = columnNames.stream().collect(Collectors.joining(", "));
+            String query = "insert into PAPolicy."+tableName+" "
+                + "(select " + selectedColumns + " from PAPolicy_Copy."+tableName+" where "
                 + "PAPolicy_Copy."+tableName+".ID in (select PAPolicy_Copy."+tableName+".ID "
                 + "from PAPolicy_Copy."+tableName+" left join PAPolicy."+tableName+" on "
                 + "PAPolicy_Copy."+tableName+".ID=PAPolicy."+tableName+".ID "
