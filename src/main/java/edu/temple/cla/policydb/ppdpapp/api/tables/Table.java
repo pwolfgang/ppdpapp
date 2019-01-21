@@ -332,6 +332,8 @@ public interface Table {
     
     ResponseEntity<?> publishDataset();
     
+    ResponseEntity<?> updateDataset();
+    
     void setSessionFactory(SessionFactory sessionFactory);
     
     String getFileUploadHtml();

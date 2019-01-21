@@ -50,7 +50,23 @@ admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'tablesAPI', '
                 
                 $scope.doPublish = function() {
                     $scope.pricessing = true;
+                    $scope.success = false;
+                    $scope.error = false;
                     adminAPI.publish(authInfo.token, $scope.dataset_type.TableName)
+                            .success(function (res) {
+                                $scope.processing = false;
+                                $scope.success = res;
+                            })
+                            .error(function (err) {
+                                $scope.error = err;
+                                $scope.processing = false;                             
+                            });
+                };
+                $scope.doUpdateCodes = function() {
+                    $scope.pricessing = true;
+                    $scope.error = false;
+                    $scope.success = false;
+                    adminAPI.update(authInfo.token, $scope.dataset_type.TableName)
                             .success(function (res) {
                                 $scope.processing = false;
                                 $scope.success = res;

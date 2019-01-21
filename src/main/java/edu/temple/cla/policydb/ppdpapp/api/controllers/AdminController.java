@@ -54,11 +54,18 @@ public class AdminController {
     @Autowired
     private TableLoader tableLoader;
 
-    @RequestMapping(method = RequestMethod.PUT, value="{tableName}")
+    @RequestMapping(method = RequestMethod.PUT, value="/publish/{tableName}")
     public ResponseEntity<?> publish(@PathVariable String tableName, 
             @RequestParam(value = "user") User user) {
         Table table = tableLoader.getTableByTableName(tableName);
         return table.publishDataset();
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value="/update/{tableName}")
+    public ResponseEntity<?> update(@PathVariable String tableName, 
+            @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableByTableName(tableName);
+        return table.updateDataset();
     }
 }
 

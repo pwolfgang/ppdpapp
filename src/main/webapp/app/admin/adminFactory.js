@@ -36,7 +36,11 @@ admin.factory('adminAPI', ['$http', 'apiRoot', function ($http, apiRoot) {
         var urlBase = apiRoot + 'admin/';
         
         dataFactory.publish = function(token, dataset) {
-            return $http.put(urlBase + dataset + '?token=' + token);
+            return $http.put(urlBase + 'publish/' + dataset + '?token=' + token);
+        };
+
+        dataFactory.update = function(token, dataset) {
+            return $http.put(urlBase + 'update/' + dataset + '?token=' + token);
         };
 
         return dataFactory;

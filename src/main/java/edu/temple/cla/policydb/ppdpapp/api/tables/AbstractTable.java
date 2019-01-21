@@ -684,42 +684,42 @@ public abstract class AbstractTable implements Table {
             String columnName = metaData.getColumnName();
             stb.append("<div class=\"form-group row\"><div class=\"col-md-12\">\n");
             if (metaData.isTypeAhead()) {
-                 stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml());
+                stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml());
             } else {
-            stb.append("<p>").append(columnName).append("</p>\n");
-            if (metaData.isEditable()) {
-               if (metaData.getDataType().equals("text")) {
-                    stb.append("<textarea class=\"form-control\" placeholder=\"")
-                            .append(columnName)
-                            .append("\" ng-model=\"")
-                            .append(columnName)
-                            .append("\"");
-                    if (metaData.isRequired()) {
-                        stb.append(" required");
+                stb.append("<p>").append(columnName).append("</p>\n");
+                if (metaData.isEditable()) {
+                    if (metaData.getDataType().equals("text")) {
+                        stb.append("<textarea class=\"form-control\" placeholder=\"")
+                                .append(columnName)
+                                .append("\" ng-model=\"")
+                                .append(columnName)
+                                .append("\"");
+                        if (metaData.isRequired()) {
+                            stb.append(" required");
+                        }
+                        stb.append("></textarea>\n");
+                    } else {
+                        stb.append("<input type=\"text\" class=\"form-control\" placeholder=\"")
+                                .append(columnName)
+                                .append("\" ng-model=\"")
+                                .append(columnName)
+                                .append("\"");
+                        if (metaData.isRequired()) {
+                            stb.append(" required");
+                        }
+                        stb.append(" />\n");
                     }
-                    stb.append("></textarea>\n");
+                } else if (metaData.isUrl()) {
+                    stb.append("<a href=\"{{")
+                            .append(columnName)
+                            .append("}}\">{{")
+                            .append(columnName)
+                            .append("}}</a>");
                 } else {
-                    stb.append("<input type=\"text\" class=\"form-control\" placeholder=\"")
+                    stb.append("<p ng-bind-html=\"")
                             .append(columnName)
-                            .append("\" ng-model=\"")
-                            .append(columnName)
-                            .append("\"");
-                    if (metaData.isRequired()) {
-                        stb.append(" required");
-                    }
-                    stb.append(" />\n");
+                            .append("\"></p>");
                 }
-            } else if (metaData.isUrl()) {
-                stb.append("<a href=\"{{")
-                        .append(columnName)
-                        .append("}}\">{{")
-                        .append(columnName)
-                        .append("}}</a>");
-            } else {
-                stb.append("<p ng-bind-html=\"")
-                        .append(columnName)
-                        .append("\"></p>");
-            }
             }
             stb.append("</div></div>\n");
         });
@@ -1080,7 +1080,7 @@ public abstract class AbstractTable implements Table {
         String s = getIndexSubScript(index);
         return "                <p class=\"input-group\">\n"
                 + "                " + columnName + "</br>\n"
-                + "                <datepicker ng-model=\"dt" + s 
+                + "                <datepicker ng-model=\"dt" + s
                 + "\" show-weeks=\"false\" class=\"well well-sm margin-bottom-xsmall\" "
                 + "style=\"display:inline-block\"></datepicker><br />\n"
                 + "                <input type=\"text\" class=\"form-control\" "
@@ -1128,75 +1128,108 @@ public abstract class AbstractTable implements Table {
     public void setColumns(Collection<String> columns) {
         this.columns = Collections.unmodifiableSet(new LinkedHashSet<>(columns));
     }
-    
+
     @Override
     public String getFileUploadHtml() {
         return null;
     }
-    
+
     @Override
     public String getFileUploadJavaScript() {
         return null;
     }
-    
+
     @Override
     public ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file) {
-            return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
     public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
-            return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<>("File Upload not Supported", HttpStatus.NOT_IMPLEMENTED);
     }
-    
+
     /**
      * Method to publish the new documents. This method finds table entries in
-     * the PAPolicy_Copy version of a table that do not have a corresponding
-     * row in the PAPolicy version, and whose code is not null. These rows are
-     * then inserted into the PAPolicy version. This method is used only for those
-     * tables which other tables are not linked to it. 
+     * the PAPolicy_Copy version of a table that do not have a corresponding row
+     * in the PAPolicy version, and whose code is not null. These rows are then
+     * inserted into the PAPolicy version. This method is used only for those
+     * tables which other tables are not linked to it.
+     *
      * @return HttpStatus.OK if successful, otherwise an error status.
      */
     @Override
     public ResponseEntity<?> publishDataset() {
+        int numberChanged;
         try (Session sess = sessionFactory.openSession()) {
-            String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS " +
-                    "where table_name='" + tableName + "' and table_schema='PAPolicy'";
+            String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
+                    + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
             @SuppressWarnings("unchecked")
             List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
             String selectedColumns = columnNames.stream().collect(Collectors.joining(", "));
-            String query = "insert into PAPolicy."+tableName+" "
-                + "(select " + selectedColumns + " from PAPolicy_Copy."+tableName+" where "
-                + "PAPolicy_Copy."+tableName+".ID in (select PAPolicy_Copy."+tableName+".ID "
-                + "from PAPolicy_Copy."+tableName+" left join PAPolicy."+tableName+" on "
-                + "PAPolicy_Copy."+tableName+".ID=PAPolicy."+tableName+".ID "
-                + "where isNull (PAPolicy."+tableName+".ID)) and "
-                + "not isNull(PAPolicy_Copy."+tableName+"."+codeColumn+"))";
+            String query = "insert into PAPolicy." + tableName + " "
+                    + "(select " + selectedColumns + " from PAPolicy_Copy." + tableName + " where "
+                    + "PAPolicy_Copy." + tableName + ".ID in (select PAPolicy_Copy." + tableName + ".ID "
+                    + "from PAPolicy_Copy." + tableName + " left join PAPolicy." + tableName + " on "
+                    + "PAPolicy_Copy." + tableName + ".ID=PAPolicy." + tableName + ".ID "
+                    + "where isNull (PAPolicy." + tableName + ".ID)) and "
+                    + "not isNull(PAPolicy_Copy." + tableName + "." + codeColumn + "))";
             Transaction tx = sess.beginTransaction();
-            sess.createNativeQuery(query)
+            numberChanged = sess.createNativeQuery(query)
                     .executeUpdate();
             tx.commit();
         }
-        return new ResponseEntity<>(documentName + " has been published", HttpStatus.OK);
+        return new ResponseEntity<>(documentName + " has been published "
+                + numberChanged + " rows changed", HttpStatus.OK);
     }
-    
+
+    /**
+     * Method to update the codes. This method updates the PAPolicy copy of the
+     * table so that the Code is equal to the corresponding Code in the
+     * PAPolicy_Copy version.
+     *
+     * @return HttpStatus.OK if successful, otherwise an error status.
+     */
+    @Override
+    public ResponseEntity<?> updateDataset() {
+        int numberChanged;
+        String query = String.format("update PAPolicy.%s left join "
+                + "PAPolicy_Copy.%s on PAPolicy.%s.ID=PAPolicy_Copy.%s.ID  "
+                + "set PAPolicy.%s.%s=PAPolicy_Copy.%s.%s "
+                + "where not isNull(PAPolicy_Copy.%s.%s)",
+                tableName, tableName, tableName, tableName,
+                tableName, codeColumn, tableName, codeColumn,
+                tableName, codeColumn);
+        try (Session sess = sessionFactory.openSession()) {
+            Transaction tx = sess.beginTransaction();
+            numberChanged = sess.createNativeQuery(query)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error Excecuting Query " + query, ex);
+        }
+        return new ResponseEntity<>(documentName + " has been updated "
+                + numberChanged + " rows changed", HttpStatus.OK);
+    }
+
     @Override
     public void setSessionFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
-    
+
     @Override
-    public SessionFactory getSessionFactory() {return sessionFactory;}
-    
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
     @Override
     public void setDataSource(DataSource datasource) {
         this.datasource = datasource;
     }
-    
+
     @Override
-    public DataSource getDataSource(){
+    public DataSource getDataSource() {
         return datasource;
     }
-
 
 }
