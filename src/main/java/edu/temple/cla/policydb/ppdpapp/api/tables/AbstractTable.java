@@ -1180,7 +1180,7 @@ public abstract class AbstractTable implements Table {
             tx.commit();
         }
         return new ResponseEntity<>(documentName + " has been published "
-                + numberChanged + " rows changed", HttpStatus.OK);
+                + numberChanged + " rows matched", HttpStatus.OK);
     }
 
     /**
@@ -1209,7 +1209,7 @@ public abstract class AbstractTable implements Table {
             throw new RuntimeException("Error Excecuting Query " + query, ex);
         }
         return new ResponseEntity<>(documentName + " has been updated "
-                + numberChanged + " rows changed", HttpStatus.OK);
+                + numberChanged + " rows matched", HttpStatus.OK);
     }
 
     @Override

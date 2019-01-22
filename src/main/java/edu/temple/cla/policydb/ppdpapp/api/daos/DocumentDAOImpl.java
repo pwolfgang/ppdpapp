@@ -339,7 +339,7 @@ public class DocumentDAOImpl implements DocumentDAO {
                 .map(tuple -> (Integer) tuple.get("Code"))
                 .collect(Collectors.toList());
         Integer matches = 1;
-        if (userPolicyCodes.size() == maxNumOfCodes) { // This is a tiebreak
+        if (userPolicyCodes.size() >= maxNumOfCodes) { // This is a tiebreak
             insertUserPolicyCode(email, tableName, docid, batchid, codeid);
             updateDocumentFinalCode(tableName, docid, batchid, codeid);
         } else if (userPolicyCodes.size() < maxNumOfCodes) {
