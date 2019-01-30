@@ -21,7 +21,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 ${document}API.getAll(authInfo.token)
                         .success(function (res) {
                         for (i = 0; i < res.length; i++) {
-                        if (res[i].${codeColumn} !== null && res[i].stat !== 4) {
+                        if (res[i].${codeColumn} !== null && res[i].stat !== -1) {
                         res[i].Status = "complete";
                         } else if (res[i].stat === 0) {
                         res[i].Status = "needs first code";
@@ -29,7 +29,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         res[i].Status = "needs second code";
                         } else if (res[i].stat === 2) {
                         res[i].Status = "needs tie break";
-                        } else if (res[i].stat === 4) {
+                        } else if (res[i].stat === -1) {
                         res[i].Status = "needs cluster resolution"
                         }
                         }

@@ -138,7 +138,7 @@ public class DocumentDAOImpl implements DocumentDAO {
                             + "Bills_Data where not isNull(ClusterId)", Tuple.class);
             clusterQuery.stream().forEach(tuple -> {
                 String id = (String) tuple.get("ID");
-                statMap.put(id, 4);
+                statMap.put(id, -1);
             });
         }
         return statMap;
