@@ -164,12 +164,12 @@ public class DocumentDAOImpl implements DocumentDAO {
                 desiredStat = 2;
                 break;
             case 5:
-                desiredStat = 4;
+                desiredStat = -1;
                 break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
         String selectQuery;
-        if (desiredStat != 4) {
+        if (desiredStat != -1) {
             selectQuery = "SELECT * FROM " + tableName + " ns "
                  + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
                  + "(select DocumentID from UserPolicyCode where TablesID="
