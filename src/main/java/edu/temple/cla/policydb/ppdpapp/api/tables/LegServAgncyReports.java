@@ -122,11 +122,11 @@ public class LegServAgncyReports extends AbstractTable {
     public void preProcessDocument(Map<String, Object> docObj) {
         String hyperlink = (String)docObj.get("Hyperlink");
         if (hyperlink.startsWith("file:")) {
-            int posColon = hyperlink.indexOf(":");
-            String fullPathName = hyperlink.substring(posColon + 1);
-            java.io.File sourceFile = new java.io.File(fullPathName);
-            String fileName = sourceFile.getName();
             try {
+                URL url = new URL(hyperlink);
+                String fullPathName = url.toURI().getPath();
+                java.io.File sourceFile = new java.io.File(fullPathName);
+                String fileName = sourceFile.getName();
                 java.io.File javaFile = enterFileIntoDatabase(docObj, fileName);
                 sourceFile.renameTo(javaFile);
             } catch (Exception e) {
