@@ -2,7 +2,7 @@
     <div class="grid-heading">${documentUC}</div>
     <div class="grid-buttons">
         <div class="grid-button" ng-show="process_action" ng-click="codeDocs()" ng-class="{disabled: processing}"><i class="fa fa-plus"></i> Add Codes</div>
-        <div class="grid-button" ng-show="has_file" ng-click="add${documentUC}ToBatch(batch_id)" title="Create a new ${document}"><i class="fa fa-plus"></i></div>
+        <div class="grid-button" ng-click="add${documentUC}ToBatch(batch_id)" title="Create a new ${document}"><i class="fa fa-plus"></i></div>
         <div class="grid-button" ng-click="reloadBatchDocs()" title="Refresh the list"><i class="fa fa-refresh"></i></div>
     </div>
     <div class="grid">
