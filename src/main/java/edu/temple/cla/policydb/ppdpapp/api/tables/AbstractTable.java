@@ -373,7 +373,11 @@ public abstract class AbstractTable implements Table {
             sj.add(column);
         }
         if (linkColumn != null) {
-            sj.add("substring(substring_index(" + linkColumn + ", '#', 2), 2) as Hyperlink");
+            if (linkColumn.contains("#")) {
+                sj.add("substring(substring_index(" + linkColumn + ", '#', 2), 2) as Hyperlink");
+            } else {
+                sj.add(linkColumn + "as Hyperlink");
+            }
         }
         return sj.toString();
     }
