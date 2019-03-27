@@ -484,7 +484,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                             });
                 };
         }])
-        .controller('${document}ViewCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'newspapersAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, newspapersAPI) {
+        .controller('${document}ViewCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'newspapersAPI', 'batchesAPI', 'filesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, newspapersAPI, batchesAPI, filesAPI) {
         // Represents the loading state
         $scope.loaded = false;
                 $scope.requestFailed = false;

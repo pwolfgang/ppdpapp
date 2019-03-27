@@ -202,7 +202,7 @@ public class LegServAgncyReports extends AbstractTable {
             updateLSAReports.setParameter(5, fileName);
             updateLSAReports.executeUpdate();
             tx.commit();
-            String url = "#lsar.spg?ID=" + newId + "#";
+            String url = "lsar.spg?ID=" + newId;
             docObj.put("Hyperlink", url);
             return javaFile;
         }
@@ -299,7 +299,7 @@ public class LegServAgncyReports extends AbstractTable {
                     + "            </div>\n"
                     + "        </div>\n"
                     + "        <div class=\"form-group row\">\n"
-                    + "            <div class=\"ng-binding ng-hide\" ng-show=\"fileNameNotDefined\">\n"
+                    + "            <!-- <div class=\"ng-binding ng-hide\" ng-show=\"fileNameNotDefined\"> -->\n"
                     + "                <div class=\"col-md-12\">\n"
                     + "                    <span class=\"btn btn-success btn-file btn-lg\" \n"
                     + "                          ng-disabled=\"form.$invalid || processing\">\n"
@@ -309,7 +309,7 @@ public class LegServAgncyReports extends AbstractTable {
                     + "                        <i ng-show=\"processing\" class=\"fa fa-spinner fa-spin\"></i>\n"
                     + "                    </span>\n"
                     + "                </div>\n"
-                    + "            </div>\n"
+                    + "            <!-- </div> -->\n"
                     + "        </div>\n";
         } else {
             return null;
