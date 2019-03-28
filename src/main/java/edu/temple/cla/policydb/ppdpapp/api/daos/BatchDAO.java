@@ -43,8 +43,6 @@ public interface BatchDAO {
 
     public Batch save(Batch batchObj);
 
-    public void create(Batch batchObj);
-
     public void delete(int id);
 
     public List<User> findUsers(int id);

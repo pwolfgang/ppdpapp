@@ -101,7 +101,15 @@ angular.module('filesControllers', ['filesFactory'])
                                                     .success(function (res) {
                                                         $scope.processing = false;
                                                         $location.path('/files');
+                                                    })
+                                                    .error(function (err) {
+                                                        $scope.error=err;
+                                                        $scope.processing = false;
                                                     });
+                                        })
+                                        .error(function (err) {
+                                            $scope.error=err;
+                                            $scope.processing = false;                                                    
                                         });
                             })
                             .error(function (err) {
