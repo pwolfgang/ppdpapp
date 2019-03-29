@@ -32,9 +32,13 @@
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
+import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
+import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
+import edu.temple.cla.policydb.ppdpapp.util.ZipUtil;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -348,4 +353,52 @@ public class LegServAgncyReports extends AbstractTable {
                 + "\n";
     }
 
+    /**
+     * Method to decompress zip file and add the content documents to a batch.
+     * This method is currently only applicable to LegServiceAgencyReports.
+     * @param documentDAO The Document DAO
+     * @param fileDAO The File DAO
+     * @param batchDAO The Batch DAO
+     * @param batchObj The Batch to which documents may be added
+     * @return Updated Batch object, or error indication.
+     */
+    @Override
+    public ResponseEntity<?> checkZip(DocumentDAO documentDAO, FileDAO fileDAO, 
+            BatchDAO batchDAO, Batch batchObj) {
+        if (batchObj.getFileID() != null) {
+            int fileId;
+            try {
+                fileId = Integer.parseInt(batchObj.getFileID());
+            } catch (NumberFormatException ex) {
+                return new ResponseEntity<>(batchObj, HttpStatus.OK);
+            }
+            File file = fileDAO.find(fileId);
+            String contentType = file.getContentType();
+            if (contentType.contains("zip")) {
+                java.io.File unzippedDirectory = ZipUtil.unzipFiles(file.getFileURL());
+                java.io.File[] files = unzippedDirectory.listFiles();
+                for (java.io.File javaFile : files) {
+                    Map<String, Object> lsaReportObject = createLSAReport(javaFile);
+                    int docID = documentDAO.insertDocument(getTableName(), lsaReportObject);
+                    batchDAO.addDocument(batchObj.getBatchID(), Integer.toString(docID));
+                }
+            }
+        }
+        return new ResponseEntity<>(batchObj, HttpStatus.OK);
+    }
+    
+    private Map<String, Object> createLSAReport(java.io.File javaFile) {
+        String name = javaFile.getName();
+        URL url;
+        try {
+            url = javaFile.toURI().toURL();
+        } catch (MalformedURLException e) {
+            // Cannot happen
+            throw new RuntimeException(e);
+        }
+        Map<String, Object> lsaReport = new HashMap<>();
+        lsaReport.put("Title", name);
+        lsaReport.put("Hyperlink", url.toString());
+        return lsaReport;
+    }
 }

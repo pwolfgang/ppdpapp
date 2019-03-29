@@ -151,6 +151,8 @@ public class DocumentController {
     @SuppressWarnings("unchecked")
     public ResponseEntity<?> updateDocument(@RequestBody Map<String, Object> docObj, 
             @PathVariable String tableName, @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableByTableName(tableName);
+        table.preProcessDocument(docObj);
         documentDAO.updateDocument(tableName, docObj);
         return new ResponseEntity<>("document updated, lad", HttpStatus.OK);
     }
