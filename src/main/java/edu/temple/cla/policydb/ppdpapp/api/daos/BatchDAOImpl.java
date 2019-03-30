@@ -84,21 +84,6 @@ public class BatchDAOImpl implements BatchDAO {
 
     @Override
     @Transactional
-    public void create(Batch batchObj) {
-        Session sess = sessionFactory.getCurrentSession();
-        NativeQuery<?> query = sess.createNativeQuery("INSERT INTO Batches "
-                + "(FileID, TablesID, AssignmentTypeID, AssignmentDescription, "
-                + "Name, DateAdded, Creator, DateDue)"
-                + "Values('" + batchObj.getFileID() + "','" + batchObj.getTablesID() 
-                + "','" + batchObj.getAssignmentTypeID() + "," 
-                + batchObj.getAssignmentDescription() + "," + batchObj.getName() 
-                + "','" + batchObj.getDateAdded() + "','" + batchObj.getCreator() 
-                + "','" + batchObj.getDateDue() + "')");
-        query.executeUpdate();
-    }
-
-    @Override
-    @Transactional
     public void delete(int id) {
         Session sess = sessionFactory.getCurrentSession();
         Batch batchObj = sess.get(Batch.class, id);

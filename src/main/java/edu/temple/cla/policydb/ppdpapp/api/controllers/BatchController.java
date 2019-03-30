@@ -117,20 +117,23 @@ public class BatchController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{id}/delete/user/{email:.+}")
-    public ResponseEntity<?> deleteUser(@PathVariable int id, @PathVariable String email, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> deleteUser(@PathVariable int id, @PathVariable String email, 
+            @RequestParam(value = "user") User user) {
         Batch batchObj = batchDAO.find(id);
         batchDAO.deleteUser(id, email);
         return new ResponseEntity<>("user deleted, comrade", HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{batchid}/add/document/{docid}")
-    public ResponseEntity<?> postAddDocument(@PathVariable int batchid, @PathVariable String docid, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> postAddDocument(@PathVariable int batchid, @PathVariable String docid, 
+            @RequestParam(value = "user") User user) {
         batchDAO.addDocument(batchid, docid);
         return new ResponseEntity<>("document added, pal", HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{batchid}/delete/document/{docid}")
-    public ResponseEntity<?> deleteDocument(@PathVariable int batchid, @PathVariable String docid, @RequestParam(value = "user") User user) {
+    public ResponseEntity<?> deleteDocument(@PathVariable int batchid, @PathVariable String docid, 
+            @RequestParam(value = "user") User user) {
         batchDAO.deleteDocument(batchid, docid);
         return new ResponseEntity<>("document deleted, chum", HttpStatus.OK);
     }

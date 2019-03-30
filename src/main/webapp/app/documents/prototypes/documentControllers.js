@@ -542,7 +542,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                             });
                         }
                         if (typeof($routeParams.batch_id) !== 'undefined') {
-                            $location.path('/assignments/' + $routeParams.batch_id + '/view/${documentUC}s');
+                            $location.path('/assignments/' + $routeParams.batch_id + '/view/${tableName}');
                         } else {
                             $location.path('/documents/${document}');
                         }

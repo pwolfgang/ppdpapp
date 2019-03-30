@@ -98,10 +98,25 @@ angular.module('filesControllers', ['filesFactory'])
                                         .success(function (file_obj) {
                                             batchObj.fileID = file_obj.fileID;
                                             batchesAPI.create(authInfo.token, batchObj)
-                                                    .success(function (res) {
+                                                    .success(function (updatedBatchObj) {
+                                                        filesAPI.checkZip(authInfo.token, updatedBatchObj)
+                                                                .success(function (res){
+                                                                    $scope.processing = false;
+                                                                    $location.path('/files');
+                                                                })
+                                                                .error(function (err){
+                                                                    $scope.error=err;
+                                                                    $scope.processing = false;
+                                                                });
+                                                    })
+                                                    .error(function (err) {
+                                                        $scope.error=err;
                                                         $scope.processing = false;
-                                                        $location.path('/files');
                                                     });
+                                        })
+                                        .error(function (err) {
+                                            $scope.error=err;
+                                            $scope.processing = false;                                                    
                                         });
                             })
                             .error(function (err) {

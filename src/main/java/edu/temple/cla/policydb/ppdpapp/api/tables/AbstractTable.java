@@ -31,11 +31,13 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.BinaryFilter;
 import java.util.List;
 import edu.temple.cla.policydb.ppdpapp.api.filters.Filter;
 import edu.temple.cla.policydb.ppdpapp.api.filters.MultiValuedFilter;
+import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -376,7 +378,7 @@ public abstract class AbstractTable implements Table {
             if (linkColumn.contains("#")) {
                 sj.add("substring(substring_index(" + linkColumn + ", '#', 2), 2) as Hyperlink");
             } else {
-                sj.add(linkColumn + "as Hyperlink");
+                sj.add(linkColumn + " as Hyperlink");
             }
         }
         return sj.toString();

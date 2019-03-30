@@ -31,8 +31,11 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
+import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.Filter;
+import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.hibernate.SessionFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -351,5 +355,19 @@ public interface Table {
     void setDataSource(DataSource datasource);
     
     DataSource getDataSource();
+    
+    /**
+     * Method to decompress zip file and add the content documents to a batch.
+     * This method is currently only applicable to LegServiceAgencyReports.
+     * @param documentDAO The Document DAO
+     * @param fileDAO The File DAO
+     * @param batchDAO The Batch DAO
+     * @param batchObj The Batch to which documents may be added
+     * @return Updated Batch object, or error indication.
+     */
+    default ResponseEntity<?> checkZip(DocumentDAO documentDAO, FileDAO fileDAO, 
+            BatchDAO batchDAO, Batch batchObj) {
+        return new ResponseEntity<>(batchObj, HttpStatus.OK);
+    }
 
 }

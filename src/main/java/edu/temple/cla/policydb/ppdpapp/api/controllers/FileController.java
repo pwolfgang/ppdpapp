@@ -32,7 +32,10 @@
 package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
 
+import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
+import edu.temple.cla.policydb.ppdpapp.api.daos.DocumentDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
+import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
 import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
@@ -54,7 +57,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileController {
 
     @Autowired
+    private DocumentDAO documentDAO;
+    @Autowired
     private FileDAO fileDAO;
+    @Autowired
+    private BatchDAO batchDAO;
     @Autowired
     private TableLoader tableLoader;
 
@@ -89,6 +96,13 @@ public class FileController {
         Table table = tableLoader.getTableById(tableId);
         return table.uploadFile(fileDAO, file);
     }
+    
+    @RequestMapping(method = RequestMethod.POST, value = "/checkZip")
+    public ResponseEntity<?> checkZip(@RequestBody Batch batchObj, @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableById(batchObj.getTablesID());
+        return table.checkZip(documentDAO, fileDAO, batchDAO, batchObj);
+    }
+            
         
     @RequestMapping(method = RequestMethod.GET, value = "/download/{id:\\d+}")
     public void doDownload(HttpServletRequest request, 
