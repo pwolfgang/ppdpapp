@@ -531,7 +531,11 @@ public class DocumentDAOImpl implements DocumentDAO {
         docObj.forEach((k, v) -> {
             if (!k.equals("ID")) {
                 columns.add(k);
-                values.add("'" + v.toString().replace("'", "''") + "'");
+                if (v != null) {
+                    values.add("'" + v.toString().replace("'", "''") + "'");
+                } else {
+                    values.add("null");
+                }
             }
         });
         String sql = "INSERT INTO " + tableName + " " + columns + " VALUES " + values + ";";

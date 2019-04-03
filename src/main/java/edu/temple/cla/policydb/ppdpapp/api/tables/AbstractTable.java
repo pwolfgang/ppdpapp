@@ -31,13 +31,11 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
-import edu.temple.cla.policydb.ppdpapp.api.daos.BatchDAO;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.BinaryFilter;
 import java.util.List;
 import edu.temple.cla.policydb.ppdpapp.api.filters.Filter;
 import edu.temple.cla.policydb.ppdpapp.api.filters.MultiValuedFilter;
-import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1006,7 +1004,7 @@ public abstract class AbstractTable implements Table {
     private String getInitializeDateField(int index) {
         String s = getIndexSubScript(index);
         return "            var lastDate" + s + " = localStorage.getItem('lastDate" + s + "');\n"
-                + "            if (lastDate" + s + " === null) {\n"
+                + "            if (lastDate" + s + " === null || lastDate" +s + "=== 'null') {\n"
                 + "                $scope.dt" + s + " = new Date();\n"
                 + "            } else {\n"
                 + "                $scope.dt" + s + " = new Date(lastDate);\n"
@@ -1055,9 +1053,10 @@ public abstract class AbstractTable implements Table {
 
     public String getDateField(int index, String dateColumn) {
         String s = getIndexSubScript(index);
-        return "                " + dateColumn
-                + ": $scope.dt" + s + ".getFullYear() + '-' + ($scope.dt" + s
-                + ".getMonth() + 1) + '-' + $scope.dt" + s + ".getDate()";
+        return "                " + dateColumn + ": ($scope.dt" + s +") ? "
+                + " $scope.dt" + s + ".getFullYear() + '-' + ($scope.dt" + s
+                + ".getMonth() + 1) + '-' + $scope.dt" + s + ".getDate()"
+                + ": null";
     }
 
     public String getSetDateFieldsFromRes() {
@@ -1077,12 +1076,14 @@ public abstract class AbstractTable implements Table {
     public String getDateFieldsHtml() {
         StringBuilder stb = new StringBuilder();
         for (int i = 0; i < getDateFieldMetaData().size(); i++) {
-            stb.append(getDateFieldHtml(i, getDateFieldMetaData().get(i).getColumnName()));
+            stb.append(getDateFieldHtml(i, getDateFieldMetaData().get(i)));
         }
         return stb.toString();
     }
 
-    public String getDateFieldHtml(int index, String columnName) {
+    public String getDateFieldHtml(int index, MetaData metadata) {
+        String columnName = metadata.getColumnName();
+        String req = metadata.isRequired() ? "true" : "false";
         String s = getIndexSubScript(index);
         return "                <p class=\"input-group\">\n"
                 + "                " + columnName + "</br>\n"
@@ -1092,7 +1093,7 @@ public abstract class AbstractTable implements Table {
                 + "                <input type=\"text\" class=\"form-control\" "
                 + "datepicker-popup=\"MM/dd/yyyy\" ng-model=\"dt" + s + "\" \n"
                 + "                       datepicker-options=\"dateOptions\" "
-                + "ng-required=\"true\" close-text=\"Close\" /><br />\n"
+                + "ng-required=\""+req+"\" close-text=\"Close\" /><br />\n"
                 + "                <button type=\"button\" class=\"btn btn-sm btn-info\" "
                 + "ng-click=\"today" + s + "()\">Today</button>\n"
                 + "                <button type=\"button\" class=\"btn btn-sm btn-danger\" "
