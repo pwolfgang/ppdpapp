@@ -4,7 +4,7 @@
 
     <groupId>edu.temple.cla.papolicy.wolfgang</groupId>
     <artifactId>newppdpapp</artifactId>
-    <version>1.1.13-SNAPSHOT</version>
+    <version>1.1.13</version>
     <packaging>war</packaging>
 
     <name>newppdpapp</name>
