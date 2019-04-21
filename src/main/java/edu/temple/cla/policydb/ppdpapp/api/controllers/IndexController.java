@@ -41,6 +41,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,15 +55,21 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class IndexController extends HttpServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(IndexController.class);
+
     @Autowired
     private TableLoader tableLoader;
-    
-    @RequestMapping(value="/", method=GET)
+
+    @RequestMapping(value = "/", method = GET)
     public ModelAndView index(HttpServletRequest request,
             HttpServletResponse response) {
         List<Table> tables = getEditableTables(tableLoader);
         Map<String, Object> model = new HashMap<>();
         model.put("tables", tables);
+        Package thePackage = getClass().getPackage();
+        String version = thePackage.getImplementationVersion();
+        LOGGER.info("Version: " + version);
+        model.put("version", version);
         return new ModelAndView("index", model);
     }
 
@@ -71,9 +78,11 @@ public class IndexController extends HttpServlet {
         Iterator<Table> itr = tables.listIterator();
         while (itr.hasNext()) {
             Table table = itr.next();
-            if (!table.isEditable()) itr.remove();
+            if (!table.isEditable()) {
+                itr.remove();
+            }
         }
         return tables;
     }
-    
+
 }
