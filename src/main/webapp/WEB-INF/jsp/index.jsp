@@ -47,6 +47,15 @@
             </div>
             <!-- Desktop version -->
             <div class="collapse navbar-collapse" id="main-navbar">
+                <div class="navbar-right" style="margin-right: 15px;">
+                    <div class="dropdown">
+                        <button class="dropbtn">About</button>
+                            <div class="dropdown-content">
+                                <p>Pennsylvania Policy Database Data Management Tool
+                                    </br>version: ${version}</p>
+                            </div>
+                    </div>  
+                </div>
                 <div class="navbar-right" style="margin-right: 15px;" ng-show="loggedIn()">
                     <p class="navbar-text">Signed in as {{nameOfUser()}}</p>
                     <button type="button" class="btn btn-default navbar-btn" ng-click="logOut()">Log Out</button>

@@ -151,7 +151,13 @@
                 <configuration>
                     <warName>newppdpapp</warName>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
+                    <archive>                   
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+               </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
