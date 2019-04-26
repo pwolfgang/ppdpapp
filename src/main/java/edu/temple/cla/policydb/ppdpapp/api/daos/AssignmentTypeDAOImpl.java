@@ -56,7 +56,7 @@ public class AssignmentTypeDAOImpl implements AssignmentTypeDAO {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<AssignmentType> criteria = builder.createQuery(AssignmentType.class);
         criteria.from(AssignmentType.class);
-        List<AssignmentType> listNewsClipTypes = session.createQuery(criteria).getResultList();
-        return listNewsClipTypes;
+        List<AssignmentType> assignmentTypeList = session.createQuery(criteria).getResultList();
+        return assignmentTypeList;
     }
 }
