@@ -395,6 +395,73 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                     }
                 };
         }])
+        .controller('${document}CAPCodeReviewCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'batchesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, batchesAPI) {
+                $scope.loaded = false;
+                $scope.requestFailed = false;
+                $scope.gridOptions = {};
+                // the reason all results are returned is because the typeahead expects functions to return a new result
+                // that reflects the current value. this method returns all the codes NO MATTER WHAT
+                $scope.external = {
+                loading: false,
+                        onSelect: function ($item, $model, $label, row) {
+                        row.entity.Coding = $item.Code;
+                        }
+                };
+                $scope.reloadBatchDocs = function () {
+                    console.log("reloadBatchDocs called");
+                $scope.loaded = false;
+                        $scope.requestFailed = false;
+                        ${document}API.clusterResolution(authInfo.token, $routeParams.batch_id)
+                        .success(function (res) {
+                        $scope.gridOptions.data = res;
+                                $scope.loaded = true;
+                                $scope.requestFailed = false;
+                        })
+                        .error(function (res) {
+                            $scope.errMst = res
+                            $scope.loaded = false;
+                            $scope.requestFailed = true;
+                        });
+                };
+                $scope.reloadBatchDocs();
+                $scope.add${documentUC}ToBatch = function (batchId) {
+                $location.path('/documents/${document}/create/' + batchId);
+                };
+                $scope.editedRows = [];
+                $scope.gridOptions.onRegisterApi = function (gridApi) {
+                $scope.gridApi = gridApi;
+                        gridApi.edit.on.afterCellEdit($scope, function (rowEntity, colDef, newValue, oldValue) {
+                        if (typeof rowEntity.Coding !== 'undefined' && rowEntity.Coding.length > 0) {
+                        $scope.editedRows[rowEntity.ID] = rowEntity;
+                        } else {
+                        $scope.editedRows[rowEntity.ID] = undefined;
+                        }
+                        });
+                };
+                $scope.codeDocs = function () {
+                if (processing)
+                        return;
+                        var promises = [];
+                        $scope.processing = true;
+                        $scope.editedRows.forEach(function (row) {
+                        if (typeof row !== 'undefined' && typeof row.UserCode !== 'undefined') {
+                        promises.push(${document}API.updateCode(authInfo.token, row.ID, row.UserCode));
+                        }
+                        });
+                        $q.all(promises).then(function () {
+                $scope.processing = false;
+                        $scope.reloadBatchDocs();
+                });
+                };
+                $scope.codeDoc = function (row) {
+                    if (typeof row.UserCode !== 'undefined') {
+                        ${document}API.updateCode(authInfo.token, row.ID, $routeParams.batch_id, row.UserCode)
+                                .error(function(res) {
+                                    alert('Error updating database\n' + res + '\nSee log');
+                                });
+                    }
+                };
+        }])
         .controller('${document}CreateCtrl', ['$scope', '$routeParams', '$q', '$location', 'authInfo', '${document}API', 'newspapersAPI', 'batchesAPI', 'filesAPI', function ($scope, $routeParams, $q, $location, authInfo, ${document}API, newspapersAPI, batchesAPI, filesAPI) {
         // Represents the loading state
             $scope.loaded = false;
