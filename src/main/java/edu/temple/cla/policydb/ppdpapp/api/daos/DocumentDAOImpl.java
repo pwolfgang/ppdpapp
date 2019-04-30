@@ -174,10 +174,13 @@ public class DocumentDAOImpl implements DocumentDAO {
             case 5:
                 desiredStat = -1;
                 break;
+            case 6:
+                desiredStat = -2;
+                break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
         String selectQuery;
-        if (desiredStat != -1) {
+        if (desiredStat != -1 && desiredStat != -2) {
             selectQuery = "SELECT * FROM " + tableName + " ns "
                  + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
                  + "(select DocumentID from UserPolicyCode where TablesID="
@@ -187,18 +190,27 @@ public class DocumentDAOImpl implements DocumentDAO {
                  + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
                  + "AssignmentTypeID=" + assignmentType + " "
                  + "AND bd.TablesID = " + tableID + ") Order By ID Desc";
-        } else {
+        } else if (desiredStat == -1) {
             selectQuery = "SELECT * FROM " + tableName + " ns WHERE NOT "
                 + "ISNULL(ClusterId) AND ns.ID NOT IN "
                 + "(SELECT bd.DocumentID FROM BatchDocument bd "
                 + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
                 + "AssignmentTypeID=" + assignmentType + " "
                 + "AND bd.TablesID = " + tableID + ") Order By ID Desc";
+        } else if (desiredStat == -2) {
+            selectQuery = "SELECT * FROM " + tableName + " ns WHERE "
+                + "(isNull(CAPOk) OR not CAPOk) AND ns.ID NOT IN "
+                + "(SELECT bd.DocumentID FROM BatchDocument bd "
+                + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
+                + "AssignmentTypeID=" + assignmentType + " "
+                + "AND bd.TablesID = " + tableID + ") Order By ID Desc";            
+        } else {
+            throw new RuntimeException("Unrecognized desiredStat " + desiredStat);
         }
         NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
-            if (desiredStat == -1) {
+            if (desiredStat == -1 || desiredStat == -2) {
                 return queryList;
             }
             List<Map<String, Object>> filteredQueryList = new ArrayList<>();
