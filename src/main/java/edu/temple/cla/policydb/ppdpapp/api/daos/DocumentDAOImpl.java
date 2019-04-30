@@ -141,6 +141,14 @@ public class DocumentDAOImpl implements DocumentDAO {
                 statMap.put(id, -1);
             });
         }
+        // Check for CAP Code Review
+        String capOKQueryTemplate = "Select ID CAPOk from %s where isNull(CAPOk) or not CAPOk";
+        String capOKQuery = String.format(capOKQueryTemplate, table.getTableName());
+        NativeQuery<Tuple> capCodeQuery = sess.createNativeQuery(capOKQuery, Tuple.class);
+        capCodeQuery.stream().forEach(tuple -> {
+            String id = (String) tuple.get("ID");
+            statMap.put(id, -2);
+        });
         return statMap;
     }
 
