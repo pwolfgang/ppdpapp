@@ -21,7 +21,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 ${document}API.getAll(authInfo.token)
                         .success(function (res) {
                         for (i = 0; i < res.length; i++) {
-                        if (res[i].${codeColumn} !== null && res[i].stat !== -1) {
+                        if (res[i].${codeColumn} !== null && res[i].stat !== -1 && res[i].stat !== -2) {
                         res[i].Status = "complete";
                         } else if (res[i].stat === 0) {
                         res[i].Status = "needs first code";
@@ -30,7 +30,9 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         } else if (res[i].stat === 2) {
                         res[i].Status = "needs tie break";
                         } else if (res[i].stat === -1) {
-                        res[i].Status = "needs cluster resolution"
+                        res[i].Status = "needs cluster resolution";
+                        } else if (res[i].stat === -2) {
+                            res[i].Status = "needs CAP Code review";
                         }
                         }
                         $scope.grid${documentUC}.data = res;
@@ -86,7 +88,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 ${document}API.noBatch(authInfo.token, assignment_type, batch_id)
                                 .success(function (res) {
                                 for (i = 0; i < res.length; i++) {
-                                if (res[i].Code !== null  && res[i].stat !== -1) {
+                                if (res[i].Code !== null  && res[i].stat !== -1 && res[i].stat !== -2) {
                                 res[i].Status = "complete";
                                 } else if (res[i].stat === 0) {
                                 res[i].Status = "needs first code";
@@ -95,7 +97,9 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                                 } else if (res[i].stat === 2) {
                                 res[i].Status = "need tie break";
                                 } else if (res[i].stat === -1) {
-                                res[i].Status = "needs cluster resolution"
+                                res[i].Status = "needs cluster resolution";
+                                } else if (res[i].stat === -2) {
+                                    res[i].Status = "needs CAP Code review";
                                 }
                                 }
                                 $scope.grid${documentUC}.data = res;
