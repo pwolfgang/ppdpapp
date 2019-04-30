@@ -72,6 +72,8 @@ public interface DocumentDAO {
     
     public List<Map<String, Object>> findDocumentsClusters(String tableName, int batchid, String email);
 
+    public List<Map<String, Object>> findDocumentsCAPReview(String tableName, int batchid, String email);
+
     public void updateDocument(String tableName, Map<String, Object> docObj);
 
     public int insertDocument(String tableName, Map<String, Object> docObj);

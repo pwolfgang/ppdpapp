@@ -497,6 +497,31 @@ public class DocumentDAOImpl implements DocumentDAO {
 
     @Override
     @Transactional
+    public List<Map<String, Object>> findDocumentsCAPReview(String tableName, 
+            int batchid, String email) {
+        Session sess = sessionFactory.getCurrentSession();
+        Table table = tableLoader.getTableByTableName(tableName);
+        String textColumn = table.getTextColumn();
+        String linkColumn = table.getLinkColumn();
+        String codeColumn = table.getCodeColumn();
+        String selectQueryTemplate = "select ID, %s, %s, %s, CAPCode, CAPOk from "
+                + "(select * from BatchDocument where BatchID=%d) as docs left "
+                + "join %s on DocumentID=ID";
+        String selectQuery = String.format(selectQueryTemplate, textColumn, linkColumn, codeColumn, batchid);
+        try {
+        NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
+        List<Map<String, Object>> documentsList
+                = query.stream()
+                        .map(MyTupleToEntityMapTransformer.INSTANCE)
+                        .collect(Collectors.toList());
+        return documentsList;
+        } catch (Throwable ex) {
+            throw new RuntimeException("Error in query " + selectQuery, ex);
+        }
+    }
+
+    @Override
+    @Transactional
     public void updateDocument(String tableName, Map<String, Object> docObj) {
         Session sess = sessionFactory.getCurrentSession();
         String[] keyArray = docObj.keySet().toArray(new String[0]);
