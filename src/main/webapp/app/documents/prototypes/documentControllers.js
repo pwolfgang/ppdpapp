@@ -415,7 +415,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                     console.log("reloadBatchDocs called");
                 $scope.loaded = false;
                         $scope.requestFailed = false;
-                        ${document}API.clusterResolution(authInfo.token, $routeParams.batch_id)
+                        ${document}API.capCodeReview(authInfo.token, $routeParams.batch_id)
                         .success(function (res) {
                         $scope.gridOptions.data = res;
                                 $scope.loaded = true;

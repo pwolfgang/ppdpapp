@@ -389,6 +389,15 @@ public class DocumentDAOImpl implements DocumentDAO {
     public void updateDocumentCode(String email, String tableName, String docid, String batchid, int codeid) {
         updateDocumentFinalCode(tableName, docid, batchid, codeid);
     }
+
+    @Override
+    @Transactional
+    public void updateCAPCode(String email, String tableName, String docid, String batchid, int codeid) {
+        Session sess = sessionFactory.getCurrentSession();
+        String queryTemplate = "UPDATE %s SET CAPCode=%d, CAPOk=1 WHERE ID=%s";
+        String query = String.format(queryTemplate, tableName, codeid, docid);
+        sess.createNativeQuery(query).executeUpdate();
+    }
     
     @Override
     @Transactional
