@@ -449,7 +449,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                         $scope.processing = true;
                         $scope.editedRows.forEach(function (row) {
                         if (typeof row !== 'undefined' && typeof row.UserCode !== 'undefined') {
-                        promises.push(${document}API.updateCode(authInfo.token, row.ID, row.UserCode));
+                        promises.push(${document}API.updateCAPCode(authInfo.token, row.ID, row.UserCode));
                         }
                         });
                         $q.all(promises).then(function () {
@@ -458,8 +458,8 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 });
                 };
                 $scope.codeDoc = function (row) {
-                    if (typeof row.UserCode !== 'undefined') {
-                        ${document}API.updateCode(authInfo.token, row.ID, $routeParams.batch_id, row.UserCode)
+                    if (typeof row.CAPCode !== 'undefined') {
+                        ${document}API.updateCAPCode(authInfo.token, row.ID, $routeParams.batch_id, row.CAPCode)
                                 .error(function(res) {
                                     alert('Error updating database\n' + res + '\nSee log');
                                 });
