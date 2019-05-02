@@ -1219,9 +1219,44 @@ public abstract class AbstractTable implements Table {
                 + numberChanged + " rows matched", HttpStatus.OK);
     }
     
+    /**
+     * Method to assign CAP codes. For editable tables that are not major only
+     * this method assigns the CAP code based on a crosswalk.  Since codes can
+     * be changed after the original coding phase a scan is then made to flag
+     * those records which the CAP code does not match the crosswalk for manual
+     * review. For major only tables, CAP Code assignment is done by the
+     * CAPCodeAssignment class.
+     * @return 
+     */
     @Override
     public ResponseEntity<?> assignCAPCode() {
-        return new ResponseEntity<>("Not Implemented", HttpStatus.NOT_IMPLEMENTED);
+        if (isMajorOnly()) {
+            // call CAPCodeAssignment
+            return new ResponseEntity<>("Not Implemented", HttpStatus.NOT_IMPLEMENTED);
+        }
+        String assignCAPCodeTemplate = "update %s left join PPAtoCAP on "
+                + "%s.%s=PPAtoCAP.PPACode set %s.CAPCode=PPAtoCAP.CAPCode "
+                + "where isNull(%s.CAPCode)";
+        String setCAPOkTemplate = "update %s left join PPAtoCAP on "
+                + "%s.%s=PPAtoCAP.PPACode set CAPOk=1 "
+                + "where %s.CAPCode=PPAtoCAP.CAPCode;";
+        String assignCAPCodeQuery = String.format(assignCAPCodeTemplate,
+                tableName, tableName, getCodeColumn(), tableName, tableName);
+        String setCAPOkQuery = String.format(setCAPOkTemplate,
+                tableName, tableName, getCodeColumn(), tableName);
+        try (Session sess = sessionFactory.openSession()) {
+            Transaction tx = sess.beginTransaction();
+            sess.createNativeQuery(assignCAPCodeQuery)
+                    .executeUpdate();
+            sess.createNativeQuery(setCAPOkQuery)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error Excecuting Query \n" 
+                    + assignCAPCodeQuery 
+                    + "\nor\n" + setCAPOkQuery, ex);
+        }
+        return new ResponseEntity<>(documentName + " has been updated " , HttpStatus.OK);          
     }
 
     @Override
