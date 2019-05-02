@@ -43,6 +43,10 @@ admin.factory('adminAPI', ['$http', 'apiRoot', function ($http, apiRoot) {
             return $http.put(urlBase + 'update/' + dataset + '?token=' + token);
         };
 
+        dataFactory.assignCAPCode = function(token, dataset) {
+            return $http.put(urlBase + 'assignCAPCode/' + dataset + '?token=' + token);
+        };
+
         return dataFactory;
     }]);
 

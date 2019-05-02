@@ -338,6 +338,8 @@ public interface Table {
     
     ResponseEntity<?> updateDataset();
     
+    ResponseEntity<?> assignCAPCode();
+    
     void setSessionFactory(SessionFactory sessionFactory);
     
     String getFileUploadHtml();

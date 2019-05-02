@@ -1218,6 +1218,11 @@ public abstract class AbstractTable implements Table {
         return new ResponseEntity<>(documentName + " has been updated "
                 + numberChanged + " rows matched", HttpStatus.OK);
     }
+    
+    @Override
+    public ResponseEntity<?> assignCAPCode() {
+        return new ResponseEntity<>("Not Implemented", HttpStatus.NOT_IMPLEMENTED);
+    }
 
     @Override
     public void setSessionFactory(SessionFactory sessionFactory) {

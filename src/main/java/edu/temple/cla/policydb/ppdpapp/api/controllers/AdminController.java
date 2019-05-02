@@ -67,5 +67,12 @@ public class AdminController {
         Table table = tableLoader.getTableByTableName(tableName);
         return table.updateDataset();
     }
+    
+    @RequestMapping(method = RequestMethod.PUT, value="/assignCAPCode/{tableName}")
+    public ResponseEntity<?> assignCAPCode(@PathVariable String tableName, 
+            @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableByTableName(tableName);
+        return table.assignCAPCode();
+    }
 }
 

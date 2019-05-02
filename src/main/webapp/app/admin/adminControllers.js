@@ -76,6 +76,20 @@ admin.controller('adminCtrl', ['$scope', '$location', 'adminAPI', 'tablesAPI', '
                                 $scope.processing = false;                             
                             });
                 };
+                $scope.doAssignCAPCode = function() {
+                    $scope.pricessing = true;
+                    $scope.error = false;
+                    $scope.success = false;
+                    adminAPI.assignCAPCode(authInfo.token, $scope.dataset_type.TableName)
+                            .success(function (res) {
+                                $scope.processing = false;
+                                $scope.success = res;
+                            })
+                            .error(function (err) {
+                                $scope.error = err;
+                                $scope.processing = false;                             
+                            });
+                };
     }]);
 
 
