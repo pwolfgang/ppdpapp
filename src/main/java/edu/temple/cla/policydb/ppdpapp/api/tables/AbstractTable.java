@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.capcodeassignment.AssignCAPCode;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.BinaryFilter;
 import java.util.List;
@@ -1231,8 +1232,10 @@ public abstract class AbstractTable implements Table {
     @Override
     public ResponseEntity<?> assignCAPCode() {
         if (isMajorOnly()) {
-            // call CAPCodeAssignment
-            return new ResponseEntity<>("Not Implemented", HttpStatus.NOT_IMPLEMENTED);
+            AssignCAPCode assignCAPCode = new AssignCAPCode();
+            assignCAPCode.setDataSource(datasource);
+            assignCAPCode.setSessionFactory(sessionFactory);
+            return assignCAPCode.doAssignment(this);
         }
         String assignCAPCodeTemplate = "update %s left join PPAtoCAP on "
                 + "%s.%s=PPAtoCAP.PPACode set %s.CAPCode=PPAtoCAP.CAPCode "

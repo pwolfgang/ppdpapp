@@ -147,7 +147,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         String capOKQuery = String.format(capOKQueryTemplate, table.getTableName());
         NativeQuery<Tuple> capCodeQuery = sess.createNativeQuery(capOKQuery, Tuple.class);
         capCodeQuery.stream().forEach(tuple -> {
-            String id = (String) tuple.get("ID");
+            String id = tuple.get("ID").toString();
             statMap.put(id, -2);
         });
         return statMap;
@@ -517,7 +517,15 @@ public class DocumentDAOImpl implements DocumentDAO {
         String selectQueryTemplate = "select ID, %s as Text, %s as Link, %s as Code, CAPCode, CAPOk from "
                 + "(select * from BatchDocument where BatchID=%d) as docs left "
                 + "join %s on DocumentID=ID";
-        String selectQuery = String.format(selectQueryTemplate, textColumn, linkColumn, codeColumn, batchid, tableName);
+        String selectQueryNoLinkTemplate = "select ID, %s as Text, %s as Code, CAPCode, CAPOk from "
+                + "(select * from BatchDocument where BatchID=%d) as docs left "
+                + "join %s on DocumentID=ID";
+        String selectQuery;
+        if (linkColumn != null) {
+            selectQuery = String.format(selectQueryTemplate, textColumn, linkColumn, codeColumn, batchid, tableName);
+        } else {
+            selectQuery = String.format(selectQueryNoLinkTemplate,textColumn,codeColumn, batchid, tableName);
+        }
         try {
         NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
         List<Map<String, Object>> documentsList
