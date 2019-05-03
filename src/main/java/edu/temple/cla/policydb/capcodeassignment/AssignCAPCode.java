@@ -29,7 +29,7 @@ public class AssignCAPCode {
         try (Session sess = sessionFactory.openSession()) {
             Transaction tx = sess.beginTransaction();
             // Initially set CAPCode to Code
-            String setDefaultTemplate = "update %s set CAPCode=%s";
+            String setDefaultTemplate = "update %s set CAPCode=%s CAPOk=1";
             String setDefaultQuery = String.format(setDefaultTemplate, 
                     table.getTableName(), table.getCodeColumn());
             sess.createNativeQuery(setDefaultQuery)
