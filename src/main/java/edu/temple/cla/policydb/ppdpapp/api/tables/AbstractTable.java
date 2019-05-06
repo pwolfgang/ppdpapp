@@ -47,7 +47,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import javax.persistence.Tuple;
 import javax.sql.DataSource;
+import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -94,7 +96,9 @@ public abstract class AbstractTable implements Table {
     private Set<String> columns;
     private SessionFactory sessionFactory;
     private DataSource datasource;
-
+    
+    protected final Logger LOGGER = Logger.getLogger(getClass());
+    
     /**
      * Get the ID
      *
@@ -1235,16 +1239,21 @@ public abstract class AbstractTable implements Table {
             @SuppressWarnings("unchecked")
             List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
             String joinCriteria = columnNames.stream()
-                    .map(s -> "PAPolicy." + tableName + "." + s + "=" + "PAPolicy_Copy." + tableName + "." + s)
-                    .collect(Collectors.joining(" AND "));
-            String selectChangedIDsTemplate = "SELECT PAPolicy.%s.ID "
-                    + "from PAPolicy.%s left join PAPolicy_Copy.%s ON "
-                    + "%s WHERE isNull(PAPolicy_Copy.%s.ID)";
-            String selectChangedIDsQuery = String.format(selectChangedIDsTemplate,
-                    tableName, tableName, tableName, joinCriteria, tableName);
-            @SuppressWarnings("unchecked")
-            List<String> changedIDs = sess.createNativeQuery(selectChangedIDsQuery).list();
-            return new ResponseEntity<>(changedIDs.toString(), HttpStatus.OK);
+                    .filter(s -> !s.equals("ID"))
+                    .map(s -> "PAPolicy." + tableName + "." + s + "<>" + "PAPolicy_Copy." + tableName + "." + s)
+                    .collect(Collectors.joining(" OR "));
+            String selectTemplate = "PAPolicy.%s.%s as PAPolicy_%s, PAPolicy_Copy.%s.%s as PAPolicy_Copy_%s";
+            String selectColumns = columnNames.stream()
+                    .map(s -> String.format(selectTemplate, tableName, s, s, tableName, s, s))
+                    .collect(Collectors.joining(", "));
+            String selectChangedRowsTemplate = " select %s from PAPolicy.%s left join PAPolicy_Copy.%s"
+                    + " on PAPolicy.%s.ID=PAPolicy_Copy.%s.ID and (%s) "
+                    + "where not isNull(PAPolicy_Copy.%s.ID)";
+            String selectChangedRowsQuery = String.format(selectChangedRowsTemplate,
+                    selectColumns, tableName, tableName, tableName, tableName, joinCriteria, tableName);
+            LOGGER.info(selectChangedRowsQuery);
+            List<Tuple> changedRows = sess.createNativeQuery(selectChangedRowsQuery, Tuple.class).list();
+            return new ResponseEntity<>(changedRows.toString(), HttpStatus.OK);
         } catch (Exception ex) {
             throw new RuntimeException("Error updating all fields", ex);
         }

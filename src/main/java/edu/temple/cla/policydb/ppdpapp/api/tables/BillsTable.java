@@ -51,9 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Paul Wolfgang
  */
 public class BillsTable extends AbstractTable {
-    
-    private static final Logger LOGGER = Logger.getLogger(BillsTable.class);
-    
+       
     private DataSource datasource;
     
     @Override

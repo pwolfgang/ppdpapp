@@ -71,8 +71,6 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public class LegServAgncyReports extends AbstractTable {
 
-    public static final Logger LOGGER = Logger.getLogger(LegServAgncyReports.class);
-
     /**
      * Method to respond to the POST file/upload where the tableId references
      * the Legislative Service Agency Reports.
