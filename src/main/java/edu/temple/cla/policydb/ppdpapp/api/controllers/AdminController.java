@@ -61,11 +61,18 @@ public class AdminController {
         return table.publishDataset();
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value="/update/{tableName}")
+    @RequestMapping(method = RequestMethod.PUT, value="/updateCodes/{tableName}")
     public ResponseEntity<?> update(@PathVariable String tableName, 
             @RequestParam(value = "user") User user) {
         Table table = tableLoader.getTableByTableName(tableName);
-        return table.updateDataset();
+        return table.updateCodes();
+    }
+    
+    @RequestMapping(method = RequestMethod.PUT, value="/assignCAPCode/{tableName}")
+    public ResponseEntity<?> assignCAPCode(@PathVariable String tableName, 
+            @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableByTableName(tableName);
+        return table.assignCAPCode();
     }
 }
 

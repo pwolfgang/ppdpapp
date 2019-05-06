@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import static java.util.stream.Collectors.toList;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -74,15 +75,10 @@ public class IndexController extends HttpServlet {
     }
 
     public static List<Table> getEditableTables(TableLoader tableLoader) {
-        List<Table> tables = new ArrayList<>(tableLoader.getTables());
-        Iterator<Table> itr = tables.listIterator();
-        while (itr.hasNext()) {
-            Table table = itr.next();
-            if (!table.isEditable()) {
-                itr.remove();
-            }
-        }
-        return tables;
+        return tableLoader.getTables()
+                .stream()
+                .filter(t->t.isEditable())
+                .collect(toList());
     }
 
 }

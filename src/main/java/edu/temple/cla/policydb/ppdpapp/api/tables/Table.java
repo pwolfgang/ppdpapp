@@ -336,7 +336,9 @@ public interface Table {
     
     ResponseEntity<?> publishDataset();
     
-    ResponseEntity<?> updateDataset();
+    ResponseEntity<?> updateCodes();
+    
+    ResponseEntity<?> assignCAPCode();
     
     void setSessionFactory(SessionFactory sessionFactory);
     

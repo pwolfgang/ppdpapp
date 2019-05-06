@@ -52,6 +52,12 @@ ${document}.factory('${document}API', ['$http', '$upload', 'apiRoot', function (
         dataFactory.updateCode = function (token, doc_id, batch_id, code_id) {
             return $http.post(urlBase + '/' + doc_id + '/batch/' + batch_id + '/update/code/' + code_id + '?token=' + token);
         };
+        dataFactory.capCodeReview = function (token, batch_id) {
+            return $http.get(urlBase + '/batch/' + batch_id + '/capCodeReview?token=' + token);
+        };
+        dataFactory.updateCAPCode = function (token, doc_id, batch_id, code_id) {
+            return $http.post(urlBase + '/' + doc_id + '/batch/' + batch_id + '/update/CAPCode/' + code_id + '?token=' + token);
+        };
         
         return dataFactory;
     }]);

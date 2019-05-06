@@ -147,6 +147,27 @@ public class DocumentController {
         return new ResponseEntity<>("document code added, bud", HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.POST, 
+            value = "/{tableName}/{docid}/batch/{batchid}/update/CAPCode/{codeid}")
+    public ResponseEntity<?> updateCAPCode(@PathVariable String tableName, 
+            @PathVariable String docid, 
+            @PathVariable String batchid, 
+            @PathVariable String codeid, 
+            @RequestParam(value = "user") User user) {
+        int code;
+        try {
+            code = Integer.parseInt(codeid);
+            documentDAO.updateCAPCode(user.getEmail(), tableName, docid, batchid, code);
+        } catch (NumberFormatException nfex) {
+            if (!"null".equals(codeid)) {
+                return new ResponseEntity<>("Bad code value " + codeid, 
+                        HttpStatus.BAD_REQUEST);
+            }
+        }
+        // Either way, this is OK.
+        return new ResponseEntity<>("document code added, bud", HttpStatus.OK);
+    }
+
     @RequestMapping(method = RequestMethod.PUT, value = "/{tableName}")
     @SuppressWarnings("unchecked")
     public ResponseEntity<?> updateDocument(@RequestBody Map<String, Object> docObj, 
@@ -186,6 +207,14 @@ public class DocumentController {
     public ResponseEntity<?> getDocumentClusters(@PathVariable String tableName,
             @PathVariable int batchid, @RequestParam(value = "user") User user) {
         return new ResponseEntity<>(documentDAO.findDocumentsClusters(tableName,
+                batchid, user.getEmail()), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value = "/{tableName}/batch/{batchid}/capCodeReview")
+    public ResponseEntity<?> getDocumentCAPCodeReview(@PathVariable String tableName,
+            @PathVariable int batchid, @RequestParam(value = "user") User user) {
+        return new ResponseEntity<>(documentDAO.findDocumentsCAPReview(tableName,
                 batchid, user.getEmail()), HttpStatus.OK);
     }
 

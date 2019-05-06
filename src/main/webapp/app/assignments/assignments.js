@@ -45,6 +45,16 @@ acct.config(['$routeProvider', function ($routeProvider) {
            }
         });
 
+        $routeProvider.when('/assignments/:batch_id/cap_code_review/${tableName}', {
+           templateUrl: 'app/documents/${document}/${document}_cap_code_review.html',
+           caseInsensitiveMatch: true,
+           controller: '${document}CAPCodeReviewCtrl',
+           resolve: {
+               authenticated: function (authFactory) {
+                   return authFactory.resolveIsLoggedIn();
+               }
+           }
+        });
         $endFor
             
     }]);
