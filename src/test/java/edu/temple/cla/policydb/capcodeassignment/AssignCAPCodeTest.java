@@ -74,12 +74,12 @@ public class AssignCAPCodeTest {
 
         @Override
         public int getId() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setId(int id) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
@@ -89,87 +89,87 @@ public class AssignCAPCodeTest {
 
         @Override
         public void setTableName(String tableName) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public boolean isCode3() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getTableTitle() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setTableTitle(String tableTitle) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public boolean isMajorOnly() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setMajorOnly(boolean majorOnly) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public int getMinYear() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setMinYear(int minYear) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public int getMaxYear() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setMaxYear(int maxYear) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public List<Filter> getFilterList() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public int getFilterListSize() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setFilterList(List<Filter> filterList) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public List<MetaData> getMetaDataList() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setMetaDataList(List<MetaData> metaDataList) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public char getQualifier() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setQualifier(char qualifier) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
@@ -179,17 +179,17 @@ public class AssignCAPCodeTest {
 
         @Override
         public void setTextColumn(String textColumn) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getLinkColumn() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setLinkColumn(String linkColumn) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
@@ -199,192 +199,192 @@ public class AssignCAPCodeTest {
 
         @Override
         public void setCodeColumn(String codeColumn) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getDateColumn() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setDateColumn(String dateColumn) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getDateFormat() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setDateFormat(String dateFormat) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported."); 
         }
 
         @Override
         public String getYearColumn() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setYearColumn(String yearColumn) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String[] getDrillDownColumns() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setDrillDownColumns(String[] drillDownColumns) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String[] getCodingColumns() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getCodingColumnsList() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setCodingColumns(String[] codingColumns) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setNoteColumn(String noteColumn) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getNoteColumn() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public boolean isDataEntry() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setDataEntry(boolean isDataEntry) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public boolean isEditable() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setEditable(boolean isEditable) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public boolean isRequired() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setRequired(boolean isRequired) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public Set<String> getColumns() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setColumns(Collection<String> columns) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getDocumentName() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setDocumentName(String documentName) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public int getNumCodesRequired() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setNumCodesRequired(int numCodesRequired) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public Map<String, String> getTemplateParameters() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public ResponseEntity<?> uploadFile(String docObjJson, MultipartFile file) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public ResponseEntity<?> publishDataset() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
-        public ResponseEntity<?> updateDataset() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        public ResponseEntity<?> updateCodes() {
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public ResponseEntity<?> assignCAPCode() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setSessionFactory(SessionFactory sessionFactory) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getFileUploadHtml() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public String getFileUploadJavaScript() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public SessionFactory getSessionFactory() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public void setDataSource(DataSource datasource) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public DataSource getDataSource() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported.");
         }
     }
     

@@ -336,7 +336,7 @@ public interface Table {
     
     ResponseEntity<?> publishDataset();
     
-    ResponseEntity<?> updateDataset();
+    ResponseEntity<?> updateCodes();
     
     ResponseEntity<?> assignCAPCode();
     
