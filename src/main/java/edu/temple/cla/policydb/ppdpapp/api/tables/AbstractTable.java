@@ -1172,7 +1172,8 @@ public abstract class AbstractTable implements Table {
         try (Session sess = sessionFactory.openSession()) {
             String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
                     + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
-            List<String> columnNames = sess.createNativeQuery(metaDataQuery, String.class).list();
+            @SuppressWarnings("unchecked")
+            List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
             String selectedColumns = columnNames.stream().collect(Collectors.joining(", "));
             String query = "insert into PAPolicy." + tableName + " "
                     + "(select " + selectedColumns + " from PAPolicy_Copy." + tableName + " where "
@@ -1228,7 +1229,25 @@ public abstract class AbstractTable implements Table {
      */
     @Override
     public ResponseEntity<?> updateAll() {
-        return new ResponseEntity<>("Not Implemented", HttpStatus.NOT_IMPLEMENTED);
+        try (Session sess = sessionFactory.openSession()) {
+            String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
+                    + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
+            @SuppressWarnings("unchecked")
+            List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
+            String joinCriteria = columnNames.stream()
+                    .map(s -> "PAPolicy." + tableName + "." + s + "=" + "PAPolicy_Copy." + tableName + "." + s)
+                    .collect(Collectors.joining(" AND "));
+            String selectChangedIDsTemplate = "SELECT PAPolicy.%s.ID "
+                    + "from PAPolicy.%s left join PAPolicy_Copy.%s ON "
+                    + "%s WHERE isNull(PAPolicy_Copy.%s.ID)";
+            String selectChangedIDsQuery = String.format(selectChangedIDsTemplate,
+                    tableName, tableName, tableName, joinCriteria, tableName);
+            @SuppressWarnings("unchecked")
+            List<String> changedIDs = sess.createNativeQuery(selectChangedIDsQuery).list();
+            return new ResponseEntity<>(changedIDs.toString(), HttpStatus.OK);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error updating all fields", ex);
+        }
     }
     
     /**
