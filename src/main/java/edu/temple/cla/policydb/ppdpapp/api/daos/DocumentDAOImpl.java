@@ -35,6 +35,7 @@ import edu.temple.cia.policydb.ppdpapp.util.BillsUtil;
 import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import edu.temple.cla.papolicy.wolfgang.resolveclusters.DisplayClustersInTable;
+import edu.temple.cla.papolicy.wolfgang.resolveclusters.Util;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -141,6 +142,14 @@ public class DocumentDAOImpl implements DocumentDAO {
                 statMap.put(id, -1);
             });
         }
+        // Check for CAP Code Review
+        String capOKQueryTemplate = "Select ID, CAPOk from %s where isNull(CAPOk) or not CAPOk";
+        String capOKQuery = String.format(capOKQueryTemplate, table.getTableName());
+        NativeQuery<Tuple> capCodeQuery = sess.createNativeQuery(capOKQuery, Tuple.class);
+        capCodeQuery.stream().forEach(tuple -> {
+            String id = tuple.get("ID").toString();
+            statMap.put(id, -2);
+        });
         return statMap;
     }
 
@@ -166,10 +175,13 @@ public class DocumentDAOImpl implements DocumentDAO {
             case 5:
                 desiredStat = -1;
                 break;
+            case 6:
+                desiredStat = -2;
+                break;
         }
         Map<String, Integer> statMap = getStatMap(sess, tableID);
         String selectQuery;
-        if (desiredStat != -1) {
+        if (desiredStat != -1 && desiredStat != -2) {
             selectQuery = "SELECT * FROM " + tableName + " ns "
                  + "WHERE isNull(ns." + codeColumn + ") AND ns.ID NOT IN "
                  + "(select DocumentID from UserPolicyCode where TablesID="
@@ -179,18 +191,27 @@ public class DocumentDAOImpl implements DocumentDAO {
                  + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
                  + "AssignmentTypeID=" + assignmentType + " "
                  + "AND bd.TablesID = " + tableID + ") Order By ID Desc";
-        } else {
+        } else if (desiredStat == -1) {
             selectQuery = "SELECT * FROM " + tableName + " ns WHERE NOT "
                 + "ISNULL(ClusterId) AND ns.ID NOT IN "
                 + "(SELECT bd.DocumentID FROM BatchDocument bd "
                 + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
                 + "AssignmentTypeID=" + assignmentType + " "
                 + "AND bd.TablesID = " + tableID + ") Order By ID Desc";
+        } else if (desiredStat == -2) {
+            selectQuery = "SELECT * FROM " + tableName + " ns WHERE "
+                + "(isNull(CAPOk) OR not CAPOk) AND ns.ID NOT IN "
+                + "(SELECT bd.DocumentID FROM BatchDocument bd "
+                + "JOIN Batches on bd.BatchID=Batches.BatchID WHERE "
+                + "AssignmentTypeID=" + assignmentType + " "
+                + "AND bd.TablesID = " + tableID + ") Order By ID Desc";            
+        } else {
+            throw new RuntimeException("Unrecognized desiredStat " + desiredStat);
         }
         NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
         try {
             List<Map<String, Object>> queryList = applyStatusToQueryResult(query, statMap);
-            if (desiredStat == -1) {
+            if (desiredStat == -1 || desiredStat == -2) {
                 return queryList;
             }
             List<Map<String, Object>> filteredQueryList = new ArrayList<>();
@@ -369,6 +390,15 @@ public class DocumentDAOImpl implements DocumentDAO {
     public void updateDocumentCode(String email, String tableName, String docid, String batchid, int codeid) {
         updateDocumentFinalCode(tableName, docid, batchid, codeid);
     }
+
+    @Override
+    @Transactional
+    public void updateCAPCode(String email, String tableName, String docid, String batchid, int codeid) {
+        Session sess = sessionFactory.getCurrentSession();
+        String queryTemplate = "UPDATE %s SET CAPCode=%d, CAPOk=1 WHERE ID='%s'";
+        String query = String.format(queryTemplate, tableName, codeid, docid);
+        sess.createNativeQuery(query).executeUpdate();
+    }
     
     @Override
     @Transactional
@@ -473,6 +503,48 @@ public class DocumentDAOImpl implements DocumentDAO {
         } catch (Throwable ex) {
             throw new RuntimeException("Error in query " + selectQuery, ex);
         }
+    }
+
+    @Override
+    @Transactional
+    public List<Map<String, Object>> findDocumentsCAPReview(String tableName, 
+            int batchid, String email) {
+        Session sess = sessionFactory.getCurrentSession();
+        Table table = tableLoader.getTableByTableName(tableName);
+        String textColumn = table.getTextColumn();
+        String linkColumn = table.getLinkColumn();
+        String codeColumn = table.getCodeColumn();
+        String selectQueryTemplate = "select ID, %s as Text, %s as Link, %s as Code, CAPCode, CAPOk from "
+                + "(select * from BatchDocument where BatchID=%d) as docs left "
+                + "join %s on DocumentID=ID";
+        String selectQueryNoLinkTemplate = "select ID, %s as Text, %s as Code, CAPCode, CAPOk from "
+                + "(select * from BatchDocument where BatchID=%d) as docs left "
+                + "join %s on DocumentID=ID";
+        String selectQuery;
+        if (linkColumn != null) {
+            selectQuery = String.format(selectQueryTemplate, textColumn, linkColumn, codeColumn, batchid, tableName);
+        } else {
+            selectQuery = String.format(selectQueryNoLinkTemplate,textColumn,codeColumn, batchid, tableName);
+        }
+        try {
+        NativeQuery<Tuple> query = sess.createNativeQuery(selectQuery, Tuple.class);
+        List<Map<String, Object>> documentsList
+                = query.stream()
+                        .map(MyTupleToEntityMapTransformer.INSTANCE)
+                        .map(DocumentDAOImpl::fixHyperlink)
+                        .collect(Collectors.toList());
+        return documentsList;
+        } catch (Throwable ex) {
+            throw new RuntimeException("Error in query " + selectQuery, ex);
+        }
+    }
+    
+    private static Map<String, Object> fixHyperlink(Map<String, Object> row) {
+        String id = (String) row.get("ID");
+        String link = Util.reformatHyperlink((String) row.get("Link"));
+        String idLink = String.format("<a href=\"%s\">%s</a>", link, id);
+        row.put("IDLink", idLink);
+        return row;
     }
 
     @Override

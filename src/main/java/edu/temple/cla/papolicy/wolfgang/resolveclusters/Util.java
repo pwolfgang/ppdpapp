@@ -108,6 +108,7 @@ public class Util {
     }
 
     public static String reformatHyperlink(String hyperlink) {
+        if (hyperlink == null) return "";
         int firstSharp = hyperlink.indexOf("#");
         if (firstSharp == -1) {
             return hyperlink;

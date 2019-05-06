@@ -31,6 +31,7 @@
  */
 package edu.temple.cla.policydb.ppdpapp.api.tables;
 
+import edu.temple.cla.policydb.capcodeassignment.AssignCAPCode;
 import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.filters.BinaryFilter;
 import java.util.List;
@@ -1171,8 +1172,7 @@ public abstract class AbstractTable implements Table {
         try (Session sess = sessionFactory.openSession()) {
             String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
                     + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
-            @SuppressWarnings("unchecked")
-            List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
+            List<String> columnNames = sess.createNativeQuery(metaDataQuery, String.class).list();
             String selectedColumns = columnNames.stream().collect(Collectors.joining(", "));
             String query = "insert into PAPolicy." + tableName + " "
                     + "(select " + selectedColumns + " from PAPolicy_Copy." + tableName + " where "
@@ -1192,21 +1192,22 @@ public abstract class AbstractTable implements Table {
 
     /**
      * Method to update the codes. This method updates the PAPolicy copy of the
-     * table so that the Code is equal to the corresponding Code in the
-     * PAPolicy_Copy version.
+     * table so that the Code and CAPCode are equal to the corresponding Code and
+     * CAPCode in the PAPolicy_Copy version.
      *
      * @return HttpStatus.OK if successful, otherwise an error status.
      */
     @Override
-    public ResponseEntity<?> updateDataset() {
+    public ResponseEntity<?> updateCodes() {
         int numberChanged;
         String query = String.format("update PAPolicy.%s left join "
                 + "PAPolicy_Copy.%s on PAPolicy.%s.ID=PAPolicy_Copy.%s.ID  "
-                + "set PAPolicy.%s.%s=PAPolicy_Copy.%s.%s "
+                + "set PAPolicy.%s.%s=PAPolicy_Copy.%s.%s,"
+                + "PAPolicy.%s.CAPCode=PAPolicy_Copy.%s.CAPCode "
                 + "where not isNull(PAPolicy_Copy.%s.%s)",
                 tableName, tableName, tableName, tableName,
                 tableName, codeColumn, tableName, codeColumn,
-                tableName, codeColumn);
+                tableName, tableName, tableName, codeColumn);
         try (Session sess = sessionFactory.openSession()) {
             Transaction tx = sess.beginTransaction();
             numberChanged = sess.createNativeQuery(query)
@@ -1217,6 +1218,48 @@ public abstract class AbstractTable implements Table {
         }
         return new ResponseEntity<>(documentName + " has been updated "
                 + numberChanged + " rows matched", HttpStatus.OK);
+    }
+    
+    /**
+     * Method to assign CAP codes. For editable tables that are not major only
+     * this method assigns the CAP code based on a crosswalk.  Since codes can
+     * be changed after the original coding phase a scan is then made to flag
+     * those records which the CAP code does not match the crosswalk for manual
+     * review. For major only tables, CAP Code assignment is done by the
+     * CAPCodeAssignment class.
+     * @return 
+     */
+    @Override
+    public ResponseEntity<?> assignCAPCode() {
+        if (isMajorOnly()) {
+            AssignCAPCode assignCAPCode = new AssignCAPCode();
+            assignCAPCode.setDataSource(datasource);
+            assignCAPCode.setSessionFactory(sessionFactory);
+            return assignCAPCode.doAssignment(this);
+        }
+        String assignCAPCodeTemplate = "update %s left join PPAtoCAP on "
+                + "%s.%s=PPAtoCAP.PPACode set %s.CAPCode=PPAtoCAP.CAPCode "
+                + "where isNull(%s.CAPCode)";
+        String setCAPOkTemplate = "update %s left join PPAtoCAP on "
+                + "%s.%s=PPAtoCAP.PPACode set CAPOk=1 "
+                + "where %s.CAPCode=PPAtoCAP.CAPCode;";
+        String assignCAPCodeQuery = String.format(assignCAPCodeTemplate,
+                tableName, tableName, getCodeColumn(), tableName, tableName);
+        String setCAPOkQuery = String.format(setCAPOkTemplate,
+                tableName, tableName, getCodeColumn(), tableName);
+        try (Session sess = sessionFactory.openSession()) {
+            Transaction tx = sess.beginTransaction();
+            sess.createNativeQuery(assignCAPCodeQuery)
+                    .executeUpdate();
+            sess.createNativeQuery(setCAPOkQuery)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error Excecuting Query \n" 
+                    + assignCAPCodeQuery 
+                    + "\nor\n" + setCAPOkQuery, ex);
+        }
+        return new ResponseEntity<>(documentName + " has been updated " , HttpStatus.OK);          
     }
 
     @Override
