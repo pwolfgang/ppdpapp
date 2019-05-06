@@ -338,6 +338,8 @@ public interface Table {
     
     ResponseEntity<?> updateCodes();
     
+    ResponseEntity<?> updateAll();
+    
     ResponseEntity<?> assignCAPCode();
     
     void setSessionFactory(SessionFactory sessionFactory);

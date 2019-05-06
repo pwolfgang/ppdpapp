@@ -62,10 +62,17 @@ public class AdminController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, value="/updateCodes/{tableName}")
-    public ResponseEntity<?> update(@PathVariable String tableName, 
+    public ResponseEntity<?> updateCodes(@PathVariable String tableName, 
             @RequestParam(value = "user") User user) {
         Table table = tableLoader.getTableByTableName(tableName);
         return table.updateCodes();
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value="/updateAll/{tableName}")
+    public ResponseEntity<?> updateAll(@PathVariable String tableName, 
+            @RequestParam(value = "user") User user) {
+        Table table = tableLoader.getTableByTableName(tableName);
+        return table.updateAll();
     }
     
     @RequestMapping(method = RequestMethod.PUT, value="/assignCAPCode/{tableName}")

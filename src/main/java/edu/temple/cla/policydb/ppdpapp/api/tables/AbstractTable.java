@@ -1219,6 +1219,17 @@ public abstract class AbstractTable implements Table {
         return new ResponseEntity<>(documentName + " has been updated "
                 + numberChanged + " rows matched", HttpStatus.OK);
     }
+
+    /**
+     * Method to update all fields. This method updates the PAPolicy copy of the
+     * table so that all fields are equal to the values in the PAPolicy_Copy version.
+     *
+     * @return HttpStatus.OK if successful, otherwise an error status.
+     */
+    @Override
+    public ResponseEntity<?> updateAll() {
+        return new ResponseEntity<>("Not Implemented", HttpStatus.NOT_IMPLEMENTED);
+    }
     
     /**
      * Method to assign CAP codes. For editable tables that are not major only
