@@ -42,11 +42,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 import javax.persistence.Tuple;
 import javax.sql.DataSource;
 import org.apache.log4j.Logger;
@@ -1242,7 +1244,7 @@ public abstract class AbstractTable implements Table {
                     .filter(s -> !s.equals("ID"))
                     .map(s -> "PAPolicy." + tableName + "." + s + "<>" + "PAPolicy_Copy." + tableName + "." + s)
                     .collect(Collectors.joining(" OR "));
-            String selectTemplate = "PAPolicy.%s.%s as PAPolicy_%s, PAPolicy_Copy.%s.%s as PAPolicy_Copy_%s";
+            String selectTemplate = "PAPolicy.%s.%s as PAPolicy_%s, PAPolicy_Copy.%s.%s as PAPolicyCopy_%s";
             String selectColumns = columnNames.stream()
                     .map(s -> String.format(selectTemplate, tableName, s, s, tableName, s, s))
                     .collect(Collectors.joining(", "));
@@ -1252,10 +1254,33 @@ public abstract class AbstractTable implements Table {
             String selectChangedRowsQuery = String.format(selectChangedRowsTemplate,
                     selectColumns, tableName, tableName, tableName, tableName, joinCriteria, tableName);
             LOGGER.info(selectChangedRowsQuery);
-            List<Tuple> changedRows = sess.createNativeQuery(selectChangedRowsQuery, Tuple.class).list();
+            List<Tuple> changedRowsList = sess.createNativeQuery(selectChangedRowsQuery, Tuple.class).list();
+            List<Map<String, Map<String, Object>>> changedRows = changedRowsList.stream()
+                    .map(tuple -> {
+                        Map<String, Map<String, Object>> outerMap = new HashMap<>();
+                        tuple.getElements().forEach(element ->{
+                            String[] keys = splitAlias(element.getAlias());
+                            String dbKey = keys[0];
+                            String columnKey = keys[1];
+                            Map<String, Object> innerMap = outerMap.getOrDefault(dbKey, new LinkedHashMap<>());
+                            innerMap.put(columnKey, tuple.get(element));
+                            outerMap.put(dbKey, innerMap);
+                        });
+                        return outerMap;
+                    })
+                    .collect(toList());
             return new ResponseEntity<>(changedRows.toString(), HttpStatus.OK);
         } catch (Exception ex) {
             throw new RuntimeException("Error updating all fields", ex);
+        }
+    }
+    
+    static String[] splitAlias(String alias) {
+        int firstUnderscore = alias.indexOf("_");
+        if (firstUnderscore == -1) {
+            return new String[]{"", alias};
+        } else { 
+            return new String[]{alias.substring(0, firstUnderscore), alias.substring(firstUnderscore+1)};
         }
     }
     
