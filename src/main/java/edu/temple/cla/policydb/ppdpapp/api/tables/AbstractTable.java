@@ -41,10 +41,12 @@ import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import static java.util.Collections.emptyMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -1255,7 +1257,7 @@ public abstract class AbstractTable implements Table {
                     selectColumns, tableName, tableName, tableName, tableName, joinCriteria, tableName);
             LOGGER.info(selectChangedRowsQuery);
             List<Tuple> changedRowsList = sess.createNativeQuery(selectChangedRowsQuery, Tuple.class).list();
-            List<Map<String, Map<String, Object>>> changedRows = changedRowsList.stream()
+            List<String> changedRows = changedRowsList.stream()
                     .map(tuple -> {
                         Map<String, Map<String, Object>> outerMap = new HashMap<>();
                         tuple.getElements().forEach(element ->{
@@ -1268,12 +1270,43 @@ public abstract class AbstractTable implements Table {
                         });
                         return outerMap;
                     })
+                    .map(this::genUpdateStatement)
+                    .filter(s -> !s.isEmpty())
                     .collect(toList());
+            LOGGER.info(changedRows);
             return new ResponseEntity<>(changedRows.toString(), HttpStatus.OK);
         } catch (Exception ex) {
             throw new RuntimeException("Error updating all fields", ex);
         }
     }
+    
+    String genUpdateStatement(Map<String, Map<String, Object>> row) {
+        String updateStatementTemplate = "UPDATE PAPolicy.%s SET %s WHERE PAPolicy.%s.ID=%s";
+        String assignmentTemplate = "PAPolicy.%s.%s=PAPolicy_Copy.%s.%s";
+        Map<String, Object> papolicyData = row.getOrDefault("PAPolicy", emptyMap());
+        Map<String, Object> papolicyCopyData = row.getOrDefault("PAPolicyCopy", emptyMap());
+        StringJoiner stj = new StringJoiner(", ");
+        papolicyData.forEach((k, v) ->{
+            Object papolicyValue = v;
+            Object papolicyCopyValue = papolicyCopyData.get(k);
+            if (!Objects.equals(papolicyValue, papolicyCopyValue)) {
+                stj.add(String.format(assignmentTemplate, tableName, k, tableName, k));
+            }
+        });
+        if (stj.length() > 0) {
+            Object rowId = papolicyData.get("ID");
+            String idString;
+            if (rowId instanceof Number) {
+                idString = rowId.toString();
+            } else {
+                idString = "'" + rowId.toString() + "'";
+            }
+            return String.format(updateStatementTemplate, tableName, stj.toString(), tableName, idString);
+        } else {
+            return "";
+        }
+    }
+   
     
     static String[] splitAlias(String alias) {
         int firstUnderscore = alias.indexOf("_");
