@@ -100,9 +100,9 @@ public abstract class AbstractTable implements Table {
     private Set<String> columns;
     private SessionFactory sessionFactory;
     private DataSource datasource;
-    
+
     protected final Logger LOGGER = Logger.getLogger(getClass());
-    
+
     /**
      * Get the ID
      *
@@ -1013,7 +1013,7 @@ public abstract class AbstractTable implements Table {
     private String getInitializeDateField(int index) {
         String s = getIndexSubScript(index);
         return "            var lastDate" + s + " = localStorage.getItem('lastDate" + s + "');\n"
-                + "            if (lastDate" + s + " === null || lastDate" +s + "=== 'null') {\n"
+                + "            if (lastDate" + s + " === null || lastDate" + s + "=== 'null') {\n"
                 + "                $scope.dt" + s + " = new Date();\n"
                 + "            } else {\n"
                 + "                $scope.dt" + s + " = new Date(lastDate);\n"
@@ -1062,7 +1062,7 @@ public abstract class AbstractTable implements Table {
 
     public String getDateField(int index, String dateColumn) {
         String s = getIndexSubScript(index);
-        return "                " + dateColumn + ": ($scope.dt" + s +") ? "
+        return "                " + dateColumn + ": ($scope.dt" + s + ") ? "
                 + " $scope.dt" + s + ".getFullYear() + '-' + ($scope.dt" + s
                 + ".getMonth() + 1) + '-' + $scope.dt" + s + ".getDate()"
                 + ": null";
@@ -1102,7 +1102,7 @@ public abstract class AbstractTable implements Table {
                 + "                <input type=\"text\" class=\"form-control\" "
                 + "datepicker-popup=\"MM/dd/yyyy\" ng-model=\"dt" + s + "\" \n"
                 + "                       datepicker-options=\"dateOptions\" "
-                + "ng-required=\""+req+"\" close-text=\"Close\" /><br />\n"
+                + "ng-required=\"" + req + "\" close-text=\"Close\" /><br />\n"
                 + "                <button type=\"button\" class=\"btn btn-sm btn-info\" "
                 + "ng-click=\"today" + s + "()\">Today</button>\n"
                 + "                <button type=\"button\" class=\"btn btn-sm btn-danger\" "
@@ -1201,8 +1201,8 @@ public abstract class AbstractTable implements Table {
 
     /**
      * Method to update the codes. This method updates the PAPolicy copy of the
-     * table so that the Code and CAPCode are equal to the corresponding Code and
-     * CAPCode in the PAPolicy_Copy version.
+     * table so that the Code and CAPCode are equal to the corresponding Code
+     * and CAPCode in the PAPolicy_Copy version.
      *
      * @return HttpStatus.OK if successful, otherwise an error status.
      */
@@ -1231,100 +1231,48 @@ public abstract class AbstractTable implements Table {
 
     /**
      * Method to update all fields. This method updates the PAPolicy copy of the
-     * table so that all fields are equal to the values in the PAPolicy_Copy version.
+     * table so that all fields are equal to the values in the PAPolicy_Copy
+     * version.
      *
      * @return HttpStatus.OK if successful, otherwise an error status.
      */
     @Override
     public ResponseEntity<?> updateAll() {
+        int numberChanged = 0;
         try (Session sess = sessionFactory.openSession()) {
             String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
                     + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
             @SuppressWarnings("unchecked")
             List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
-            String joinCriteria = columnNames.stream()
+            String assignment = columnNames.stream()
                     .filter(s -> !s.equals("ID"))
-                    .map(s -> "PAPolicy." + tableName + "." + s + "<>" + "PAPolicy_Copy." + tableName + "." + s)
-                    .collect(Collectors.joining(" OR "));
-            String selectTemplate = "PAPolicy.%s.%s as PAPolicy_%s, PAPolicy_Copy.%s.%s as PAPolicyCopy_%s";
-            String selectColumns = columnNames.stream()
-                    .map(s -> String.format(selectTemplate, tableName, s, s, tableName, s, s))
+                    .map(s -> "PAPolicy." + tableName + "." + s + "=" + "PAPolicy_Copy." + tableName + "." + s)
                     .collect(Collectors.joining(", "));
-            String selectChangedRowsTemplate = " select %s from PAPolicy.%s left join PAPolicy_Copy.%s"
-                    + " on PAPolicy.%s.ID=PAPolicy_Copy.%s.ID and (%s) "
-                    + "where not isNull(PAPolicy_Copy.%s.ID)";
-            String selectChangedRowsQuery = String.format(selectChangedRowsTemplate,
-                    selectColumns, tableName, tableName, tableName, tableName, joinCriteria, tableName);
-            LOGGER.info(selectChangedRowsQuery);
-            List<Tuple> changedRowsList = sess.createNativeQuery(selectChangedRowsQuery, Tuple.class).list();
-            List<String> changedRows = changedRowsList.stream()
-                    .map(tuple -> {
-                        Map<String, Map<String, Object>> outerMap = new HashMap<>();
-                        tuple.getElements().forEach(element ->{
-                            String[] keys = splitAlias(element.getAlias());
-                            String dbKey = keys[0];
-                            String columnKey = keys[1];
-                            Map<String, Object> innerMap = outerMap.getOrDefault(dbKey, new LinkedHashMap<>());
-                            innerMap.put(columnKey, tuple.get(element));
-                            outerMap.put(dbKey, innerMap);
-                        });
-                        return outerMap;
-                    })
-                    .map(this::genUpdateStatement)
-                    .filter(s -> !s.isEmpty())
-                    .collect(toList());
-            LOGGER.info(changedRows);
-            return new ResponseEntity<>(changedRows.toString(), HttpStatus.OK);
+            String updateTemplate = "UPDATE PAPolicy.%s left join PAPolicy_Copy.%s "
+                    + "ON PAPolicy.%s.ID=PAPolicy_Copy.%s.ID SET %s";
+            String updateQuery = String.format(updateTemplate, tableName,
+                    tableName, tableName, tableName, assignment);
+            LOGGER.info(updateQuery);
+            Transaction tx = sess.beginTransaction();
+            numberChanged = sess.createNativeQuery(updateQuery)
+                    .executeUpdate();
+            tx.commit();
         } catch (Exception ex) {
             throw new RuntimeException("Error updating all fields", ex);
         }
+        return new ResponseEntity<>(documentName + " has been updated "
+                + numberChanged + " rows matched", HttpStatus.OK);
     }
-    
-    String genUpdateStatement(Map<String, Map<String, Object>> row) {
-        String updateStatementTemplate = "UPDATE PAPolicy.%s SET %s WHERE PAPolicy.%s.ID=%s";
-        String assignmentTemplate = "PAPolicy.%s.%s=PAPolicy_Copy.%s.%s";
-        Map<String, Object> papolicyData = row.getOrDefault("PAPolicy", emptyMap());
-        Map<String, Object> papolicyCopyData = row.getOrDefault("PAPolicyCopy", emptyMap());
-        StringJoiner stj = new StringJoiner(", ");
-        papolicyData.forEach((k, v) ->{
-            Object papolicyValue = v;
-            Object papolicyCopyValue = papolicyCopyData.get(k);
-            if (!Objects.equals(papolicyValue, papolicyCopyValue)) {
-                stj.add(String.format(assignmentTemplate, tableName, k, tableName, k));
-            }
-        });
-        if (stj.length() > 0) {
-            Object rowId = papolicyData.get("ID");
-            String idString;
-            if (rowId instanceof Number) {
-                idString = rowId.toString();
-            } else {
-                idString = "'" + rowId.toString() + "'";
-            }
-            return String.format(updateStatementTemplate, tableName, stj.toString(), tableName, idString);
-        } else {
-            return "";
-        }
-    }
-   
-    
-    static String[] splitAlias(String alias) {
-        int firstUnderscore = alias.indexOf("_");
-        if (firstUnderscore == -1) {
-            return new String[]{"", alias};
-        } else { 
-            return new String[]{alias.substring(0, firstUnderscore), alias.substring(firstUnderscore+1)};
-        }
-    }
-    
+
     /**
      * Method to assign CAP codes. For editable tables that are not major only
-     * this method assigns the CAP code based on a crosswalk.  Since codes can
-     * be changed after the original coding phase a scan is then made to flag
-     * those records which the CAP code does not match the crosswalk for manual
+     * this method assigns the CAP code based on a crosswalk. Since codes can be
+     * changed after the original coding phase a scan is then made to flag those
+     * records which the CAP code does not match the crosswalk for manual
      * review. For major only tables, CAP Code assignment is done by the
      * CAPCodeAssignment class.
-     * @return 
+     *
+     * @return
      */
     @Override
     public ResponseEntity<?> assignCAPCode() {
@@ -1352,11 +1300,11 @@ public abstract class AbstractTable implements Table {
                     .executeUpdate();
             tx.commit();
         } catch (Exception ex) {
-            throw new RuntimeException("Error Excecuting Query \n" 
-                    + assignCAPCodeQuery 
+            throw new RuntimeException("Error Excecuting Query \n"
+                    + assignCAPCodeQuery
                     + "\nor\n" + setCAPOkQuery, ex);
         }
-        return new ResponseEntity<>(documentName + " has been updated " , HttpStatus.OK);          
+        return new ResponseEntity<>(documentName + " has been updated ", HttpStatus.OK);
     }
 
     @Override
