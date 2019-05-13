@@ -1208,7 +1208,6 @@ public abstract class AbstractTable implements Table {
      */
     @Override
     public ResponseEntity<?> updateCodes() {
-        int numberChanged;
         String query = String.format("update PAPolicy.%s left join "
                 + "PAPolicy_Copy.%s on PAPolicy.%s.ID=PAPolicy_Copy.%s.ID  "
                 + "set PAPolicy.%s.%s=PAPolicy_Copy.%s.%s,"
@@ -1237,7 +1236,6 @@ public abstract class AbstractTable implements Table {
      */
     @Override
     public ResponseEntity<?> updateAll() {
-        int numberChanged = 0;
         try (Session sess = sessionFactory.openSession()) {
             String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
                     + "where table_name='" + tableName + "' and table_schema='PAPolicy'";

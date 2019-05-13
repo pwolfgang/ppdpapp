@@ -72,12 +72,16 @@ public class AccountController {
             User user = userDAO.find(values[0]);
             if (user == null) {
                 LOGGER.error("Unrecognized user " + values[0] + "Attempted login");
-                return new ResponseEntity<>("User not recognized", HttpStatus.UNAUTHORIZED);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("WWW-authenticate", "Basic")
+                        .body("User not recognized");
             }
             String uid = values[0].split("@")[0];
             Object[] authorized = authorizeUser(uid, values[1]);
             if (!(boolean)(authorized[0])){
-                return new ResponseEntity<>("Incorrect credentials provided " + authorized[1], HttpStatus.UNAUTHORIZED);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("WWW-authenticate", "Basic")
+                        .body("Incorrect credentials provided " + authorized[1]);
             }
             Calendar c = Calendar.getInstance();
 
@@ -95,14 +99,16 @@ public class AccountController {
             LOGGER.info(user.getEmail() + "Logged in");
             return new ResponseEntity<>("\"" + token + "\"", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Error processing login " + e, HttpStatus.UNAUTHORIZED);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("WWW-authenticate", "Basic")
+                        .body("Error processing login " + e);
         }
     }
     
     private Object[] authorizeUser(String uid, String pw) {
         // Check for dummy accounts
         // Note that dummy accounts must be in the Users table, so these
-        // accounts are not available on the in production.
+        // accounts are not available on the production system.
         switch (uid) {
             case "admin":
             case "researcher":
