@@ -353,6 +353,11 @@ public class AssignCAPCodeTest {
         }
 
         @Override
+        public ResponseEntity<?> updateAll() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
         public ResponseEntity<?> assignCAPCode() {
             throw new UnsupportedOperationException("Not supported.");
         }

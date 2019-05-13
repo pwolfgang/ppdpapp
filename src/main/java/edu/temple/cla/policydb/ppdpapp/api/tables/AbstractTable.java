@@ -41,13 +41,19 @@ import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import static java.util.Collections.emptyMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
+import javax.persistence.Tuple;
 import javax.sql.DataSource;
+import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -94,6 +100,8 @@ public abstract class AbstractTable implements Table {
     private Set<String> columns;
     private SessionFactory sessionFactory;
     private DataSource datasource;
+
+    protected final Logger LOGGER = Logger.getLogger(getClass());
 
     /**
      * Get the ID
@@ -1005,7 +1013,7 @@ public abstract class AbstractTable implements Table {
     private String getInitializeDateField(int index) {
         String s = getIndexSubScript(index);
         return "            var lastDate" + s + " = localStorage.getItem('lastDate" + s + "');\n"
-                + "            if (lastDate" + s + " === null || lastDate" +s + "=== 'null') {\n"
+                + "            if (lastDate" + s + " === null || lastDate" + s + "=== 'null') {\n"
                 + "                $scope.dt" + s + " = new Date();\n"
                 + "            } else {\n"
                 + "                $scope.dt" + s + " = new Date(lastDate);\n"
@@ -1054,7 +1062,7 @@ public abstract class AbstractTable implements Table {
 
     public String getDateField(int index, String dateColumn) {
         String s = getIndexSubScript(index);
-        return "                " + dateColumn + ": ($scope.dt" + s +") ? "
+        return "                " + dateColumn + ": ($scope.dt" + s + ") ? "
                 + " $scope.dt" + s + ".getFullYear() + '-' + ($scope.dt" + s
                 + ".getMonth() + 1) + '-' + $scope.dt" + s + ".getDate()"
                 + ": null";
@@ -1094,7 +1102,7 @@ public abstract class AbstractTable implements Table {
                 + "                <input type=\"text\" class=\"form-control\" "
                 + "datepicker-popup=\"MM/dd/yyyy\" ng-model=\"dt" + s + "\" \n"
                 + "                       datepicker-options=\"dateOptions\" "
-                + "ng-required=\""+req+"\" close-text=\"Close\" /><br />\n"
+                + "ng-required=\"" + req + "\" close-text=\"Close\" /><br />\n"
                 + "                <button type=\"button\" class=\"btn btn-sm btn-info\" "
                 + "ng-click=\"today" + s + "()\">Today</button>\n"
                 + "                <button type=\"button\" class=\"btn btn-sm btn-danger\" "
@@ -1172,7 +1180,8 @@ public abstract class AbstractTable implements Table {
         try (Session sess = sessionFactory.openSession()) {
             String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
                     + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
-            List<String> columnNames = sess.createNativeQuery(metaDataQuery, String.class).list();
+            @SuppressWarnings("unchecked")
+            List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
             String selectedColumns = columnNames.stream().collect(Collectors.joining(", "));
             String query = "insert into PAPolicy." + tableName + " "
                     + "(select " + selectedColumns + " from PAPolicy_Copy." + tableName + " where "
@@ -1192,8 +1201,8 @@ public abstract class AbstractTable implements Table {
 
     /**
      * Method to update the codes. This method updates the PAPolicy copy of the
-     * table so that the Code and CAPCode are equal to the corresponding Code and
-     * CAPCode in the PAPolicy_Copy version.
+     * table so that the Code and CAPCode are equal to the corresponding Code
+     * and CAPCode in the PAPolicy_Copy version.
      *
      * @return HttpStatus.OK if successful, otherwise an error status.
      */
@@ -1210,24 +1219,58 @@ public abstract class AbstractTable implements Table {
                 tableName, tableName, tableName, codeColumn);
         try (Session sess = sessionFactory.openSession()) {
             Transaction tx = sess.beginTransaction();
-            numberChanged = sess.createNativeQuery(query)
+            sess.createNativeQuery(query)
                     .executeUpdate();
             tx.commit();
         } catch (Exception ex) {
             throw new RuntimeException("Error Excecuting Query " + query, ex);
         }
-        return new ResponseEntity<>(documentName + " has been updated "
-                + numberChanged + " rows matched", HttpStatus.OK);
+        return new ResponseEntity<>(documentName + " has been updated ", HttpStatus.OK);
     }
-    
+
+    /**
+     * Method to update all fields. This method updates the PAPolicy copy of the
+     * table so that all fields are equal to the values in the PAPolicy_Copy
+     * version.
+     *
+     * @return HttpStatus.OK if successful, otherwise an error status.
+     */
+    @Override
+    public ResponseEntity<?> updateAll() {
+        int numberChanged = 0;
+        try (Session sess = sessionFactory.openSession()) {
+            String metaDataQuery = "select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS "
+                    + "where table_name='" + tableName + "' and table_schema='PAPolicy'";
+            @SuppressWarnings("unchecked")
+            List<String> columnNames = sess.createNativeQuery(metaDataQuery).list();
+            String assignment = columnNames.stream()
+                    .filter(s -> !s.equals("ID"))
+                    .map(s -> "PAPolicy." + tableName + "." + s + "=" + "PAPolicy_Copy." + tableName + "." + s)
+                    .collect(Collectors.joining(", "));
+            String updateTemplate = "UPDATE PAPolicy.%s left join PAPolicy_Copy.%s "
+                    + "ON PAPolicy.%s.ID=PAPolicy_Copy.%s.ID SET %s";
+            String updateQuery = String.format(updateTemplate, tableName,
+                    tableName, tableName, tableName, assignment);
+            LOGGER.info(updateQuery);
+            Transaction tx = sess.beginTransaction();
+            sess.createNativeQuery(updateQuery)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error updating all fields", ex);
+        }
+        return new ResponseEntity<>(documentName + " has been updated ", HttpStatus.OK);
+    }
+
     /**
      * Method to assign CAP codes. For editable tables that are not major only
-     * this method assigns the CAP code based on a crosswalk.  Since codes can
-     * be changed after the original coding phase a scan is then made to flag
-     * those records which the CAP code does not match the crosswalk for manual
+     * this method assigns the CAP code based on a crosswalk. Since codes can be
+     * changed after the original coding phase a scan is then made to flag those
+     * records which the CAP code does not match the crosswalk for manual
      * review. For major only tables, CAP Code assignment is done by the
      * CAPCodeAssignment class.
-     * @return 
+     *
+     * @return
      */
     @Override
     public ResponseEntity<?> assignCAPCode() {
@@ -1255,11 +1298,11 @@ public abstract class AbstractTable implements Table {
                     .executeUpdate();
             tx.commit();
         } catch (Exception ex) {
-            throw new RuntimeException("Error Excecuting Query \n" 
-                    + assignCAPCodeQuery 
+            throw new RuntimeException("Error Excecuting Query \n"
+                    + assignCAPCodeQuery
                     + "\nor\n" + setCAPOkQuery, ex);
         }
-        return new ResponseEntity<>(documentName + " has been updated " , HttpStatus.OK);          
+        return new ResponseEntity<>(documentName + " has been updated ", HttpStatus.OK);
     }
 
     @Override
