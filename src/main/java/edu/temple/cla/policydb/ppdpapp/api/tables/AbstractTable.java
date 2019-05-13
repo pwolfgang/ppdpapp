@@ -1219,14 +1219,13 @@ public abstract class AbstractTable implements Table {
                 tableName, tableName, tableName, codeColumn);
         try (Session sess = sessionFactory.openSession()) {
             Transaction tx = sess.beginTransaction();
-            numberChanged = sess.createNativeQuery(query)
+            sess.createNativeQuery(query)
                     .executeUpdate();
             tx.commit();
         } catch (Exception ex) {
             throw new RuntimeException("Error Excecuting Query " + query, ex);
         }
-        return new ResponseEntity<>(documentName + " has been updated "
-                + numberChanged + " rows matched", HttpStatus.OK);
+        return new ResponseEntity<>(documentName + " has been updated ", HttpStatus.OK);
     }
 
     /**
@@ -1254,14 +1253,13 @@ public abstract class AbstractTable implements Table {
                     tableName, tableName, tableName, assignment);
             LOGGER.info(updateQuery);
             Transaction tx = sess.beginTransaction();
-            numberChanged = sess.createNativeQuery(updateQuery)
+            sess.createNativeQuery(updateQuery)
                     .executeUpdate();
             tx.commit();
         } catch (Exception ex) {
             throw new RuntimeException("Error updating all fields", ex);
         }
-        return new ResponseEntity<>(documentName + " has been updated "
-                + numberChanged + " rows matched", HttpStatus.OK);
+        return new ResponseEntity<>(documentName + " has been updated ", HttpStatus.OK);
     }
 
     /**
