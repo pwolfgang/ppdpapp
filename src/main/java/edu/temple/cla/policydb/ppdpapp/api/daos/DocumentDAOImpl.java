@@ -136,15 +136,18 @@ public class DocumentDAOImpl implements DocumentDAO {
         if (table.getDocumentName().equals("bills")) {
             NativeQuery<Tuple> clusterQuery = 
                     sess.createNativeQuery("Select ID, ClusterId from "
-                            + "Bills_Data where not isNull(ClusterId)", Tuple.class);
+                            + "Bills_Data where not isNull(Code) "
+                            + "and not isNull(ClusterId)", Tuple.class);
             clusterQuery.stream().forEach(tuple -> {
                 String id = (String) tuple.get("ID");
                 statMap.put(id, -1);
             });
         }
         // Check for CAP Code Review
-        String capOKQueryTemplate = "Select ID, CAPOk from %s where isNull(CAPOk) or not CAPOk";
-        String capOKQuery = String.format(capOKQueryTemplate, table.getTableName());
+        String capOKQueryTemplate = "Select ID, CAPOk from %s "
+                + "where (not isNull(CAPCode) or not isNull(%s)) "
+                + "and (isNull(CAPOk) or not CAPOk)";
+        String capOKQuery = String.format(capOKQueryTemplate, table.getTableName(), table.getCodeColumn());
         NativeQuery<Tuple> capCodeQuery = sess.createNativeQuery(capOKQuery, Tuple.class);
         capCodeQuery.stream().forEach(tuple -> {
             String id = tuple.get("ID").toString();
@@ -161,8 +164,9 @@ public class DocumentDAOImpl implements DocumentDAO {
         Table table = tableLoader.getTableByTableName(tableName);
         int tableID = table.getId();
         String codeColumn = table.getCodeColumn();
-        int desiredStat = -1;
+        int desiredStat = 0;
         switch (assignmentType) {
+            case 1:
             case 2:
                 desiredStat = 0;
                 break;

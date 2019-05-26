@@ -90,29 +90,19 @@ public class TranscriptTable extends AbstractTable {
      */
     @Override
     public ResponseEntity<?> uploadFile(FileDAO fileDAO, MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        java.io.File baseDir = new java.io.File("/var/ppdp/files");
-        java.io.File javaFile = new java.io.File(baseDir, fileName);
         File fileObj = new File();
-        try {
-            URL fileURL = javaFile.toURI().toURL();
-            fileObj.setFileURL(fileURL.toString());
-        } catch (MalformedURLException ex) {
-            // cannot happen
-        }
-        fileObj.setContentType(file.getContentType());
-
         if (!file.isEmpty()) {
             try {
+                fileObj = fileDAO.save(fileObj);
                 byte[] bytes = file.getBytes();{
                     InputStream input = new ByteArrayInputStream(bytes);
                     // Create special session factory to access Transcript tables
                     try (SessionFactory sessionFactory = buildSessionFactory(dataSource)) {
-                        TranscriptDAO transcriptDAO = new TranscriptDAO(sessionFactory);
+                        TranscriptDAO transcriptDAO 
+                                = new TranscriptDAO(sessionFactory, fileObj.getFileID(), getId());
                         transcriptDAO.loadDocument(input);
                     }
                 }
-                fileObj = fileDAO.save(fileObj);
                 return new ResponseEntity<>(fileObj, HttpStatus.OK);
             } catch (Exception e) {
                 LOGGER.error("Error uploading file", e);

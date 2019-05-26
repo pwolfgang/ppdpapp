@@ -56,7 +56,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import static java.util.stream.Collectors.toList;
 import javax.persistence.Tuple;
-import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
