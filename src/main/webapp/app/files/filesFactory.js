@@ -21,8 +21,8 @@ angular.module('filesFactory', [])
                         file: file
                     });
                 };
-                dataFactory.checkZip = function (token, batchObj) {
-                    return $http.post(urlBase + '/checkZip/?token=' + token, batchObj);
+                dataFactory.addToBatch = function (token, batchObj) {
+                    return $http.post(urlBase + '/addToBatch/?token=' + token, batchObj);
                 }
                 return dataFactory;
             }]);

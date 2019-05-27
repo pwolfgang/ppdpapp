@@ -99,7 +99,7 @@ angular.module('filesControllers', ['filesFactory'])
                                             batchObj.fileID = file_obj.fileID;
                                             batchesAPI.create(authInfo.token, batchObj)
                                                     .success(function (updatedBatchObj) {
-                                                        filesAPI.checkZip(authInfo.token, updatedBatchObj)
+                                                        filesAPI.addToBatch(authInfo.token, updatedBatchObj)
                                                                 .success(function (res){
                                                                     $scope.processing = false;
                                                                     $location.path('/files');

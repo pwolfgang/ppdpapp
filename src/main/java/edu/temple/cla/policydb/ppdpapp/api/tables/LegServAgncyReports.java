@@ -353,6 +353,7 @@ public class LegServAgncyReports extends AbstractTable {
     /**
      * Method to decompress zip file and add the content documents to a batch.
      * This method is currently only applicable to LegServiceAgencyReports.
+     * If the file is not a zip file, this method returns the Batch object.
      * @param documentDAO The Document DAO
      * @param fileDAO The File DAO
      * @param batchDAO The Batch DAO
@@ -360,7 +361,7 @@ public class LegServAgncyReports extends AbstractTable {
      * @return Updated Batch object, or error indication.
      */
     @Override
-    public ResponseEntity<?> checkZip(DocumentDAO documentDAO, FileDAO fileDAO, 
+    public ResponseEntity<?> addToBatch(DocumentDAO documentDAO, FileDAO fileDAO, 
             BatchDAO batchDAO, Batch batchObj) {
         if (batchObj.getFileID() != null) {
             int fileId;
