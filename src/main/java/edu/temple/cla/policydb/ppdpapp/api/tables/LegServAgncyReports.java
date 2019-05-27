@@ -368,6 +368,7 @@ public class LegServAgncyReports extends AbstractTable {
             try {
                 fileId = Integer.parseInt(batchObj.getFileID());
             } catch (NumberFormatException ex) {
+                // Batch not associated with a file
                 return new ResponseEntity<>(batchObj, HttpStatus.OK);
             }
             File file = fileDAO.find(fileId);
@@ -380,9 +381,15 @@ public class LegServAgncyReports extends AbstractTable {
                     int docID = documentDAO.insertDocument(getTableName(), lsaReportObject);
                     batchDAO.addDocument(batchObj.getBatchID(), Integer.toString(docID));
                 }
-            }
+                return new ResponseEntity<>(batchObj, HttpStatus.OK);            
+            } else {
+                // File is not a ZIP file.
+                return new ResponseEntity<>(batchObj, HttpStatus.OK);
+            }            
+        } else {
+            // Batch not associated with a file.
+            return new ResponseEntity<>(batchObj, HttpStatus.OK);
         }
-        return new ResponseEntity<>(batchObj, HttpStatus.OK);
     }
     
     private Map<String, Object> createLSAReport(java.io.File javaFile) {
