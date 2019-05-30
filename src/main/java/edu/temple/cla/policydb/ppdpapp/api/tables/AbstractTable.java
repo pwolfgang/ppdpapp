@@ -692,7 +692,7 @@ public abstract class AbstractTable implements Table {
             String columnName = metaData.getColumnName();
             stb.append("<div class=\"form-group row\"><div class=\"col-md-12\">\n");
             if (metaData.isTypeAhead()) {
-                stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml());
+                stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml(metaData.isRequired()));
             } else {
                 stb.append("<p>").append(columnName).append("</p>\n");
                 if (metaData.isEditable()) {
@@ -794,7 +794,7 @@ public abstract class AbstractTable implements Table {
     public String getTypeAheadFieldsHtml() {
         StringBuilder stb = new StringBuilder();
         getTypeAheadFieldsMetaData().forEach(metaData -> {
-            stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml());
+            stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml(metaData.isRequired()));
         });
         return stb.toString();
     }
