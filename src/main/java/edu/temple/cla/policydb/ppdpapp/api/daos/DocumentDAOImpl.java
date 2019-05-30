@@ -38,8 +38,14 @@ import edu.temple.cla.papolicy.wolfgang.resolveclusters.DisplayClustersInTable;
 import edu.temple.cla.papolicy.wolfgang.resolveclusters.Util;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
 import static java.util.Collections.emptyMap;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
 
@@ -143,8 +149,8 @@ public class DocumentDAOImpl implements DocumentDAO {
             });
         }
         // Check for CAP Code Review
-        String capOKQueryTemplate = "Select ID, CAPOk from %s where isNull(CAPOk) or not CAPOk";
-        String capOKQuery = String.format(capOKQueryTemplate, table.getTableName());
+        String capOKQueryTemplate = "Select ID, CAPOk from %s where (not isNull(%s)) and (isNull(CAPOk) or not CAPOk)";
+        String capOKQuery = String.format(capOKQueryTemplate, table.getTableName(), table.getCodeColumn());
         NativeQuery<Tuple> capCodeQuery = sess.createNativeQuery(capOKQuery, Tuple.class);
         capCodeQuery.stream().forEach(tuple -> {
             String id = tuple.get("ID").toString();
