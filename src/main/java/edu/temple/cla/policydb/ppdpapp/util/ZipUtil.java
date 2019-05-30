@@ -50,6 +50,15 @@ import java.util.zip.ZipFile;
 public class ZipUtil {
     
     /**
+     * Determine if this is a zip file.
+     * @param zipFileURLString
+     * @return true if the file name ends in .zip
+     */
+    public static boolean isZipFile(String fileName) {
+        return fileName.indexOf(".zip") != -1;
+    }
+    
+    /**
      * Method to unzip a zip file. This method creates a directory in the parent
      * directory of the zip file. It then unzips the component files and stores
      * them in the directory.

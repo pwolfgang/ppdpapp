@@ -39,6 +39,7 @@ import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import edu.temple.cla.policydb.ppdpapp.util.ZipUtil;
+import static edu.temple.cla.policydb.ppdpapp.util.ZipUtil.isZipFile;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,7 +57,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import static java.util.stream.Collectors.toList;
 import javax.persistence.Tuple;
-import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -129,9 +129,11 @@ public class LegServAgncyReports extends AbstractTable {
                 URL url = new URL(hyperlink);
                 String fullPathName = url.toURI().getPath();
                 java.io.File sourceFile = new java.io.File(fullPathName);
-                String fileName = sourceFile.getName();
-                java.io.File javaFile = enterFileIntoDatabase(docObj, fileName);
-                sourceFile.renameTo(javaFile);
+                if (sourceFile.exists() && !isZipFile(sourceFile.getName())) {
+                    String fileName = sourceFile.getName();
+                    java.io.File javaFile = enterFileIntoDatabase(docObj, fileName);
+                    sourceFile.renameTo(javaFile);
+                }
             } catch (Exception e) {
                 throw new RuntimeException("Error entering LSAR file into database", e);
             }
