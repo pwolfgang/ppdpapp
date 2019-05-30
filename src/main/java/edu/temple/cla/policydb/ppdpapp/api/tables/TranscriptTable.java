@@ -245,13 +245,14 @@ public class TranscriptTable extends AbstractTable {
                 documentIds = getDocumentIDs.list();
             }
             int numDocuments = documentIds.size();
-            int numBatches = numDocuments / 100;
+            int numBatches = (numDocuments + 99) / 100;
             batchObj.setAssignmentTypeID(2);
             batchObj.setAssignmentDescription("First Code");
             String firstID = documentIds.get(0);
             String lastID = documentIds.get(numDocuments > 99 ? 99 : numDocuments-1);
             String batchOriginalName = batchObj.getName();
             batchObj.setName(batchOriginalName + " " + firstID + " to " + lastID);
+            batchDAO.save(batchObj);
             List<Batch> batches = new ArrayList<>();
             batches.add(batchObj);
             for (int kk = 1; kk < numBatches; kk++) {

@@ -36,6 +36,7 @@ import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.User;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
@@ -112,7 +113,7 @@ public class BatchDAOImpl implements BatchDAO {
 
     @Override
     @Transactional
-    public List<Object[]> findDocuments(int id) {
+    public List<Map<String, Object>> findDocuments(int id) {
         Session sess = sessionFactory.getCurrentSession();       
         Integer tableId = getTableIdFromBatch(sess, id);
         String tableName = tableLoader.getTableById(tableId).getTableName();
@@ -121,7 +122,9 @@ public class BatchDAOImpl implements BatchDAO {
                 + tableName + " AS nc LEFT JOIN BatchDocument AS bd ON "
                         + "nc.ID = bd.DocumentID "
                 + "WHERE bd.BatchID = " + id, Tuple.class);
-        return query.stream().map(Tuple::toArray).collect(Collectors.toList());
+        return query.stream()
+                .map(MyTupleToEntityMapTransformer.INSTANCE)
+                .collect(Collectors.toList());
     }
 
     public Integer getTableIdFromBatch(Session sess, int id) {

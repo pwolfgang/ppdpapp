@@ -69,20 +69,20 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 $scope.process_action = $routeParams.action;
                 $scope.processing_action = false;
                 $scope.grid${documentUC} = {
-        enableRowSelection: true,
-                enableSelectAll: true,
-                multiSelect: true,
-                columnDefs: [
-                    {field: 'ID'},
+                    enableRowSelection: true,
+                    enableSelectAll: true,
+                    multiSelect: true,
+                    columnDefs: [
+                        {field: 'ID'},
                         ${textFieldDefs},
                         ${dateColumnDefs},
-                {field: 'Status'}
-                ]
-        };
+                        {field: 'Status'}
+                    ]
+                };
                 $scope.reloadNoBatch = function (batch_id) {
-                $scope.loaded = false;
-                        $scope.requestFailed = false;
-                        batchesAPI.find(authInfo.token, batch_id)
+                    $scope.loaded = false;
+                    $scope.requestFailed = false;
+                    batchesAPI.find(authInfo.token, batch_id)
                         .success(function (res) {
                         var assignment_type = res.assignmentTypeID;
                                 ${document}API.noBatch(authInfo.token, assignment_type, batch_id)
@@ -183,8 +183,8 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                 case 'add':
                         $scope.reloadNoBatch(batch_id);
                         break;
-                        case 'view':
-                        case 'delete':
+                case 'view':
+                case 'delete':
                         $scope.reloadBatchDocs(batch_id);
                         break;
                 }
