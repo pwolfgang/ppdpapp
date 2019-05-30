@@ -104,13 +104,17 @@ public class TypeAheadData {
         return "$scope." + fieldNamePlural + "=" + typeAheadFieldValues + ";\n";
     }
     
-    public String getTypeAheadFieldHtml() {
+    public String getTypeAheadFieldHtml(boolean isRequired) {
+        String required = "";
+        if (isRequired) required = " required ";
         StringBuilder stb = new StringBuilder()
                 .append("        <div class=\"form-group row\"><div class=\"col-md-12\">\n")
                 .append("<p>").append(columnName).append("</p>\n")
                 .append("                <input type=\"text\" ng-model=\"")
                 .append(columnName)
-                .append("\" typeahead=\"")
+                .append("\"")
+                .append(required)
+                .append(" typeahead=\"")
                 .append(fieldName)
                 .append(".")
                 .append(nameField)

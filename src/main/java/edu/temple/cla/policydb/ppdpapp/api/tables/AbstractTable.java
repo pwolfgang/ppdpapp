@@ -41,17 +41,12 @@ import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import static java.util.Collections.emptyMap;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toList;
-import javax.persistence.Tuple;
 import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -697,7 +692,7 @@ public abstract class AbstractTable implements Table {
             String columnName = metaData.getColumnName();
             stb.append("<div class=\"form-group row\"><div class=\"col-md-12\">\n");
             if (metaData.isTypeAhead()) {
-                stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml());
+                stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml(metaData.isRequired()));
             } else {
                 stb.append("<p>").append(columnName).append("</p>\n");
                 if (metaData.isEditable()) {
@@ -799,7 +794,7 @@ public abstract class AbstractTable implements Table {
     public String getTypeAheadFieldsHtml() {
         StringBuilder stb = new StringBuilder();
         getTypeAheadFieldsMetaData().forEach(metaData -> {
-            stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml());
+            stb.append(metaData.getTypeAheadData().getTypeAheadFieldHtml(metaData.isRequired()));
         });
         return stb.toString();
     }

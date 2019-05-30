@@ -38,6 +38,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -80,7 +81,7 @@ public class ZipUtil {
                 entryName = entryNameParts[entryNameParts.length-1];
                 File destinationFile = new File(unzippedDir, entryName);
                 Path destination = destinationFile.toPath();
-                Files.copy(input.getInputStream(zipEntry), destination);
+                Files.copy(input.getInputStream(zipEntry), destination, REPLACE_EXISTING);
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
