@@ -97,10 +97,10 @@ public class FileController {
         return table.uploadFile(fileDAO, file);
     }
     
-    @RequestMapping(method = RequestMethod.POST, value = "/checkZip")
-    public ResponseEntity<?> checkZip(@RequestBody Batch batchObj, @RequestParam(value = "user") User user) {
+    @RequestMapping(method = RequestMethod.POST, value = "/addToBatch")
+    public ResponseEntity<?> addToBatch(@RequestBody Batch batchObj, @RequestParam(value = "user") User user) {
         Table table = tableLoader.getTableById(batchObj.getTablesID());
-        return table.checkZip(documentDAO, fileDAO, batchDAO, batchObj);
+        return table.addToBatch(documentDAO, fileDAO, batchDAO, batchObj);
     }
             
         

@@ -361,15 +361,16 @@ public interface Table {
     DataSource getDataSource();
     
     /**
-     * Method to decompress zip file and add the content documents to a batch.
-     * This method is currently only applicable to LegServiceAgencyReports.
+     * Method to add documents to a batch after file upload.
+     * This method is currently only applicable to LegServiceAgencyReports
+     * and the House Hearings (Transcript) tables.
      * @param documentDAO The Document DAO
      * @param fileDAO The File DAO
      * @param batchDAO The Batch DAO
      * @param batchObj The Batch to which documents may be added
      * @return Updated Batch object, or error indication.
      */
-    default ResponseEntity<?> checkZip(DocumentDAO documentDAO, FileDAO fileDAO, 
+    default ResponseEntity<?> addToBatch(DocumentDAO documentDAO, FileDAO fileDAO, 
             BatchDAO batchDAO, Batch batchObj) {
         return new ResponseEntity<>(batchObj, HttpStatus.OK);
     }

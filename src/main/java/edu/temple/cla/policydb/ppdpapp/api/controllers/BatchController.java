@@ -101,6 +101,7 @@ public class BatchController {
         List<String> previouslyCodedDocuments = documentDAO.verifyUser(id, userObj.getEmail());
         Batch batchObj = batchDAO.find(id);
         if ("Cluster".equals(batchObj.getAssignmentDescription())
+                || "CAP Code Review".equals(batchObj.getAssignmentDescription())
                 || previouslyCodedDocuments.isEmpty()) {
             List<User> userList = batchObj.getUsers();
             userList.add(userObj);
