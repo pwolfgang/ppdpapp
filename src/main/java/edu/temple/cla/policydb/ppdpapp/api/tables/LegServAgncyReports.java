@@ -124,7 +124,7 @@ public class LegServAgncyReports extends AbstractTable {
     @Override
     public void preProcessDocument(Map<String, Object> docObj) {
         String hyperlink = (String)docObj.get("Hyperlink");
-        if (hyperlink.startsWith("file:")) {
+        if (hyperlink != null && hyperlink.startsWith("file:")) {
             try {
                 URL url = new URL(hyperlink);
                 String fullPathName = url.toURI().getPath();
