@@ -123,7 +123,7 @@ public class LegServAgncyReports extends AbstractTable {
      */
     @Override
     public void preProcessDocument(Map<String, Object> docObj) {
-        String hyperlink = (String)docObj.get("Hyperlink");
+        String hyperlink = (String) docObj.get("Hyperlink");
         if (hyperlink != null && hyperlink.startsWith("file:")) {
             try {
                 URL url = new URL(hyperlink);
@@ -137,7 +137,7 @@ public class LegServAgncyReports extends AbstractTable {
             } catch (Exception e) {
                 throw new RuntimeException("Error entering LSAR file into database", e);
             }
-        }    
+        }
     }
 
     /**
@@ -167,7 +167,7 @@ public class LegServAgncyReports extends AbstractTable {
         }
     }
 
-    public java.io.File enterFileIntoDatabase(Map<String, Object> docObj, String fileName) 
+    public java.io.File enterFileIntoDatabase(Map<String, Object> docObj, String fileName)
             throws NumberFormatException, HibernateException, IOException {
         try (Session sess = getSessionFactory().openSession()) {
             String agency = (String) docObj.get("Organization");
@@ -198,8 +198,8 @@ public class LegServAgncyReports extends AbstractTable {
             Transaction tx = sess.beginTransaction();
             NativeQuery<?> updateLSAReports = sess.createNativeQuery(
                     "insert into LSAReportsText (ID, Year, Agency, "
-                            + "Title, FileName) values "
-                            + "(?, ?, ?, ?, ?)");
+                    + "Title, FileName) values "
+                    + "(?, ?, ?, ?, ?)");
             updateLSAReports.setParameter(1, newId);
             updateLSAReports.setParameter(2, year);
             updateLSAReports.setParameter(3, agency);
@@ -243,42 +243,41 @@ public class LegServAgncyReports extends AbstractTable {
                     .stream()
                     .map(t -> {
                         String[] parts = ((String) t.get("HyperLink")).split("=");
-                        return parts[1].substring(0, (parts[1].length()) - 1);
+                        return parts[1].trim();
                     })
                     .collect(toList());
-            // List the new document's ids in a table
-            sess.createNativeQuery("drop table if exists NewDocIds").executeUpdate();
-            String createNewDocIds = "create table NewDocIds (docId varchar(50))";
-            sess.createNativeQuery(createNewDocIds).executeUpdate();
-            StringJoiner sj = new StringJoiner(", ");
-            hyperLinkList.forEach(s -> sj.add(String.format("('%s')", s)));
-            if (sj.length() == 0) {
-                return new ResponseEntity<>("No Documents to Publish", HttpStatus.NO_CONTENT);
+            if (!hyperLinkList.isEmpty()) {
+                // List the new document's ids in a table
+                sess.createNativeQuery("drop table if exists NewDocIds").executeUpdate();
+                String createNewDocIds = "create table NewDocIds (docId varchar(50))";
+                sess.createNativeQuery(createNewDocIds).executeUpdate();
+                StringJoiner sj = new StringJoiner(", ");
+                hyperLinkList.forEach(s -> sj.add(String.format("('%s')", s)));
+                sess.createNativeQuery("insert into NewDocIds values " + sj.toString()).executeUpdate();
+                // Copy the new documents from ppdp to PAPolicy
+                String PAPolicy_Copy_BaseDir = "/var/ppdp/files/LegServiceAgencyReports/pdfs";
+                String PAPolicy_BaseDir = "/var/www/html/PAPolicy/LegServiceAgencyReports/pdfs";
+                String findNewDocuments = "select ID, Agency, FileName from NewDocIds "
+                        + "left join LSAReportsText on docID=ID";
+                sess.createNativeQuery(findNewDocuments, Tuple.class)
+                        .stream()
+                        .forEach(tuple -> {
+                            String agency = (String) tuple.get("Agency");
+                            String fileName = (String) tuple.get("FileName");
+                            Path fromPath = FileSystems.getDefault().getPath(PAPolicy_Copy_BaseDir, agency, fileName);
+                            Path toPath = FileSystems.getDefault().getPath(PAPolicy_BaseDir, agency, fileName);
+                            try {
+                                Files.copy(fromPath, toPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
+                            } catch (IOException ioex) {
+                                throw new RuntimeException("Error copying " + fromPath + " to " + toPath, ioex);
+                            }
+                        });
+                sess.createNativeQuery("insert into PAPolicy.LSAReportsText "
+                        + "select ID, Year, Agency, Title, FileName from NewDocIds "
+                        + "left Join LSAReportsText on docID=ID")
+                        .executeUpdate();
             }
-            sess.createNativeQuery("insert into NewDocIds values " + sj.toString()).executeUpdate();
-            // Copy the new documents from ppdp to PAPolicy
-            String PAPolicy_Copy_BaseDir = "/var/ppdp/files/LegServiceAgencyReports/pdfs";
-            String PAPolicy_BaseDir = "/var/www/html/PAPolicy/LegServiceAgencyReports/pdfs";
-            String findNewDocuments = "select ID, Agency, FileName from NewDocIds "
-                    + "left join LSAReportsText on docID=ID";
-            sess.createNativeQuery(findNewDocuments, Tuple.class)
-                    .stream()
-                    .forEach(tuple -> {
-                        String agency = (String) tuple.get("Agency");
-                        String fileName = (String) tuple.get("FileName");
-                        Path fromPath = FileSystems.getDefault().getPath(PAPolicy_Copy_BaseDir, agency, fileName);
-                        Path toPath = FileSystems.getDefault().getPath(PAPolicy_BaseDir, agency, fileName);
-                        try {
-                            Files.copy(fromPath, toPath, REPLACE_EXISTING, COPY_ATTRIBUTES);
-                        } catch (IOException ioex) {
-                            throw new RuntimeException("Error copying " + fromPath + " to " + toPath, ioex);
-                        }
-                    });
             // Insert the new documents into PAPolicy.LSAReportsText
-            sess.createNativeQuery("insert into PAPolicy.LSAReportsText "
-                    + "select ID, Year, Agency, Title, FileName from NewDocIds "
-                    + "left Join LSAReportsText on docID=ID")
-                    .executeUpdate();
             sess.createNativeQuery("insert into PAPolicy.LegServiceAgencyReports "
                     + "select LegServiceAgencyReports.ID, Title, Organization, "
                     + "Date, LegServiceAgencyReports.Hyperlink, Abstract, "
@@ -358,8 +357,9 @@ public class LegServAgncyReports extends AbstractTable {
 
     /**
      * Method to decompress zip file and add the content documents to a batch.
-     * This method is currently only applicable to LegServiceAgencyReports.
-     * If the file is not a zip file, this method returns the Batch object.
+     * This method is currently only applicable to LegServiceAgencyReports. If
+     * the file is not a zip file, this method returns the Batch object.
+     *
      * @param documentDAO The Document DAO
      * @param fileDAO The File DAO
      * @param batchDAO The Batch DAO
@@ -367,7 +367,7 @@ public class LegServAgncyReports extends AbstractTable {
      * @return Updated Batch object, or error indication.
      */
     @Override
-    public ResponseEntity<?> addToBatch(DocumentDAO documentDAO, FileDAO fileDAO, 
+    public ResponseEntity<?> addToBatch(DocumentDAO documentDAO, FileDAO fileDAO,
             BatchDAO batchDAO, Batch batchObj) {
         if (batchObj.getFileID() != null) {
             int fileId;
@@ -387,17 +387,17 @@ public class LegServAgncyReports extends AbstractTable {
                     int docID = documentDAO.insertDocument(getTableName(), lsaReportObject);
                     batchDAO.addDocument(batchObj.getBatchID(), Integer.toString(docID));
                 }
-                return new ResponseEntity<>(batchObj, HttpStatus.OK);            
+                return new ResponseEntity<>(batchObj, HttpStatus.OK);
             } else {
                 // File is not a ZIP file.
                 return new ResponseEntity<>(batchObj, HttpStatus.OK);
-            }            
+            }
         } else {
             // Batch not associated with a file.
             return new ResponseEntity<>(batchObj, HttpStatus.OK);
         }
     }
-    
+
     private Map<String, Object> createLSAReport(java.io.File javaFile) {
         String name = javaFile.getName();
         URL url;
