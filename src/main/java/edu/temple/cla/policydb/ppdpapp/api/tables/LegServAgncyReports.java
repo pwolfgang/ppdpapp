@@ -252,6 +252,9 @@ public class LegServAgncyReports extends AbstractTable {
             sess.createNativeQuery(createNewDocIds).executeUpdate();
             StringJoiner sj = new StringJoiner(", ");
             hyperLinkList.forEach(s -> sj.add(String.format("('%s')", s)));
+            if (sj.length() == 0) {
+                return new ResponseEntity<>("No Documents to Publish", HttpStatus.NO_CONTENT);
+            }
             sess.createNativeQuery("insert into NewDocIds values " + sj.toString()).executeUpdate();
             // Copy the new documents from ppdp to PAPolicy
             String PAPolicy_Copy_BaseDir = "/var/ppdp/files/LegServiceAgencyReports/pdfs";
