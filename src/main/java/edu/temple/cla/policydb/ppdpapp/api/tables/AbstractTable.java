@@ -718,6 +718,15 @@ public abstract class AbstractTable implements Table {
                         stb.append(" />\n");
                     }
                 } else if (metaData.isUrl()) {
+                    LOGGER.info("before" + columnName);
+                    if (columnName.charAt(0) == '#') {
+                        int len = columnName.length();
+                        if (columnName.charAt(len-1) == '#') {
+                            --len;
+                        }
+                        columnName = columnName.substring(1, len-1);
+                    }
+                    LOGGER.info("after" + columnName);
                     stb.append("<a href=\"{{")
                             .append(columnName)
                             .append("}}\">{{")
