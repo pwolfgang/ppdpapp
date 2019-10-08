@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import javax.persistence.Tuple;
+import org.apache.log4j.Logger;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
@@ -56,6 +57,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 public class DocumentDAOImpl implements DocumentDAO {
+    
+    private final static Logger LOGGER = Logger.getLogger(DocumentDAOImpl.class);
 
     @Autowired
     private final SessionFactory sessionFactory;
@@ -369,7 +372,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         List<Integer> userPolicyCodes = query.stream()
                 .map(tuple -> (Integer) tuple.get("Code"))
                 .collect(Collectors.toList());
-        Integer matches = 1;
+        int matches = 1;
         if (userPolicyCodes.size() >= maxNumOfCodes) { // This is a tiebreak
             insertUserPolicyCode(email, tableName, docid, batchid, codeid);
             updateDocumentFinalCode(tableName, docid, batchid, codeid);
