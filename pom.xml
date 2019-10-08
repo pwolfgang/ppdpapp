@@ -4,7 +4,7 @@
 
     <groupId>edu.temple.cla.papolicy.wolfgang</groupId>
     <artifactId>newppdpapp</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
     <packaging>war</packaging>
 
     <name>newppdpapp</name>
@@ -134,7 +134,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.9.2</version>
+            <version>2.9.10</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
