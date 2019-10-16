@@ -177,7 +177,10 @@ public class LegServAgncyReports extends AbstractTable {
             String agencyID = getAgencyID.stream()
                     .map(tuple -> (String) tuple.get("ID"))
                     .findFirst()
-                    .get();
+                    .orElse("UNDEFINED");
+            if (agencyID.equals("UNDEFINED")) {
+                throw new RuntimeException(agency + " is not recognized");
+            }
             String date = (String) docObj.get("Date");
             String[] dateTokens = date.split("-");
             String year = dateTokens[0];

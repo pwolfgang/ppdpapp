@@ -667,7 +667,7 @@ public class DocumentDAOImpl implements DocumentDAO {
         } else {
             for (Integer batchId : batchIds) {
                 if ((batchId == null && (newBatchId == null || newBatchId.equals("NULL")))
-                        || batchId == newBatchIdInt) {
+                        || (batchId != null && batchId == newBatchIdInt)) {
                     NativeQuery<?> query;
                     if (newBatchId == null || newBatchId.equals("NULL")) {
                         query = sess.createNativeQuery("UPDATE UserPolicyCode SET Code = "
