@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -695,9 +696,13 @@ public class DocumentDAOImpl implements DocumentDAO {
                                     + "to batch " + newBatchId + " but aleady coded in batch "
                                     + resultList.get(0));
                         } else {
-                            throw new RuntimeException("Update to UserPolicyCode Failed " + query);
+                            throw new RuntimeException("Update to UserPolicyCode Failed \n" + query);
                         }
                     }
+                } else {
+                    String message = String.format("User %s previously entered a policy code for %s in batch %s",
+                            email, docid, Objects.toString(batchId));
+                    throw new RuntimeException(message);
                 }
             }
         }

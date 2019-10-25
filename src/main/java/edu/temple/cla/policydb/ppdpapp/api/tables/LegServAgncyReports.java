@@ -38,6 +38,7 @@ import edu.temple.cla.policydb.ppdpapp.api.daos.FileDAO;
 import edu.temple.cla.policydb.ppdpapp.api.models.Batch;
 import edu.temple.cla.policydb.ppdpapp.api.models.File;
 import edu.temple.cla.policydb.ppdpapp.api.models.MetaData;
+import edu.temple.cla.policydb.ppdpapp.util.ErrorUtil;
 import edu.temple.cla.policydb.ppdpapp.util.ZipUtil;
 import static edu.temple.cla.policydb.ppdpapp.util.ZipUtil.isZipFile;
 import java.io.BufferedOutputStream;
@@ -162,7 +163,9 @@ public class LegServAgncyReports extends AbstractTable {
             return new ResponseEntity<>(docObj, HttpStatus.OK);
         } catch (Exception e) {
             LOGGER.error("Error uploading file", e);
-            return new ResponseEntity<>("Error uploading file, see log for details",
+            String message = ErrorUtil.formatExceptionMessages(e);
+            return new ResponseEntity<>("Error uploading file\n"  
+                    + message + "\nsee log for details",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

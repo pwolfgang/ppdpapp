@@ -327,7 +327,7 @@ ${document}.controller('${document}Ctrl', ['$scope', '$routeParams', '$q', '$loc
                     if (typeof row.UserCode !== 'undefined') {
                         ${document}API.addCode(authInfo.token, row.ID, $routeParams.batch_id, row.UserCode)
                                 .error(function(res) {
-                                    alert('Error updating database\n' + res + '\nSee log');
+                                    alert('Error updating database\n' + res);
                                 });
                     }
                 };
