@@ -33,11 +33,11 @@ package edu.temple.cla.policydb.ppdpapp.api.controllers;
 
 import edu.temple.cla.policydb.ppdpapp.api.tables.Table;
 import edu.temple.cla.policydb.ppdpapp.api.tables.TableLoader;
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import static java.util.stream.Collectors.toList;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -67,8 +67,7 @@ public class IndexController extends HttpServlet {
         List<Table> tables = getEditableTables(tableLoader);
         Map<String, Object> model = new HashMap<>();
         model.put("tables", tables);
-        Package thePackage = getClass().getPackage();
-        String version = thePackage.getImplementationVersion();
+        String version = getVersion();
         LOGGER.info("Version: " + version);
         model.put("version", version);
         return new ModelAndView("index", model);
@@ -79,6 +78,36 @@ public class IndexController extends HttpServlet {
                 .stream()
                 .filter(t->t.isEditable())
                 .collect(toList());
+    }
+    
+    private synchronized String getVersion() {
+        String version = null;
+        
+        try {
+            Properties p = new Properties();
+            InputStream is = getClass().getResourceAsStream("/META-INF/maven"
+                    + "/edu.temple.cla.papolicy.wolfgang/newppdpapp");
+            if (is != null) {
+                p.load(is);
+                version = p.getProperty("version", "");
+                is.close();
+            }
+        } catch (Exception ex) {
+            //ignore
+        }
+        
+        if (version == null) {
+            Package thePackage = getClass().getPackage();
+            version = thePackage.getImplementationVersion();
+            if (version == null) {
+                version = thePackage.getSpecificationVersion();
+            }
+        }
+        
+        if (version == null) {
+            version = "";
+        }
+        return version;
     }
 
 }

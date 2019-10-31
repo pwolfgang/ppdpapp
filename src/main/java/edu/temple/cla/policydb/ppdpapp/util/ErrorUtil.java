@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2018, Temple University
+/*
+ * Copyright (c) 2019, Temple University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,34 +29,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package edu.temple.cla.policydb.ppdpapp.api.controllers;
+package edu.temple.cla.policydb.ppdpapp.util;
 
-import edu.temple.cla.policydb.ppdpapp.util.ErrorUtil;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
- *
+ * Class to contain Error Utility methods
  * @author Paul
  */
-@ControllerAdvice
-public class MyExceptionHandler {
-
-    private static final Logger LOGGER = Logger.getLogger(MyExceptionHandler.class);
+public class ErrorUtil {
     
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> exceptionCaught(HttpServletRequest request, Exception ex) {
-        String message = new StringBuilder("\"Error Processing ")
-                .append(request.getRequestURL().toString())
-                .append("\n")
-                .append(ErrorUtil.formatExceptionMessages(ex))
-                .toString();        
-        LOGGER.error(message, ex);
-        return new ResponseEntity<>(message + "\nSee log for details\"", HttpStatus.INTERNAL_SERVER_ERROR);
+    /**
+     * Method to format a list of causes of an exception.
+     * @param ex The exception
+     * @return A String containing a list of the causes chain.
+     */
+    public static String formatExceptionMessages(Throwable ex) {
+        StringJoiner sj = new StringJoiner("\n");
+        sj.add(Objects.toString(ex.getMessage()));
+        while (ex.getCause() != null) {
+            ex = ex.getCause();
+            sj.add(Objects.toString(ex.getMessage()));
+        }
+        return sj.toString();    
     }
-
+    
 }
